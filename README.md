@@ -1,9 +1,8 @@
 # Goubot
 
-The goal of this project is to create a robot that can fetch a ball and bring it back home. "狗 (gŏu)" translates to "dog" in Chinese, which was the main naming convention for Goubot.
+**Contributors:** Jeffery Zhou, Kenneth Tochihara, Charlie Ray
 
-- [Google Drive with Project Update reports](https://drive.google.com/drive/folders/18sqLj46mc1D2UNInllISgHYMVMgnIE8k?usp=sharing)
-- [Youtube playlist with Project Update videos](https://youtube.com/playlist?list=PLUgYn1EdVdaukTL5irfwSSML7CPnV4CY7)
+The goal of this project is to create a robot that can fetch a ball and bring it back home. "狗 (gŏu)" translates to "dog" in Chinese, which was the main naming convention for Goubot. Here is the [Youtube playlist with Project Update videos](https://youtube.com/playlist?list=PLUgYn1EdVdaukTL5irfwSSML7CPnV4CY7).
 
 ### Project Update 1
 

@@ -1,0 +1,103 @@
+% Specify the type of document
+\documentclass[a4paper,12pt]{article}
+
+% Load a number of useful packages
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{gensymb}
+\usepackage[margin=1.0in]{geometry}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{cite}
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage[table]{xcolor}
+\usepackage{biblatex}
+\usepackage[utf8]{inputenc}
+\usepackage{subfig}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage[labelfont=bf]{caption}
+\usepackage{setspace}
+\usepackage{siunitx}
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
+
+\usepackage{titlesec}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+\titleformat*{\subsubsection}{\normalsize\bfseries}
+\usepackage{indentfirst}
+
+% \usepackage{fancyhdr} 
+% \pagestyle{fancy}
+% \fancyhf{}
+% \fancyheadoffset{0cm}
+% \renewcommand{\headrulewidth}{0pt} 
+% \renewcommand{\footrulewidth}{0pt}
+% \fancyhead[R]{\thepage}
+
+
+\setlength{\parindent}{0.5in}
+\addbibresource{references.bib}
+
+
+% Two more packages that make it easy to show MATLAB code
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usepackage[framed,numbered]{matlab-prettifier}
+\lstset{
+	style = Matlab-editor,
+	basicstyle=\mlttfamily\small,
+}
+
+% Say where pictures (if any) will be placed
+\graphicspath{{./pictures/}}
+
+% Define title and author (date is auto-generated, unless you define it)
+\renewcommand{\baselinestretch}{2}
+
+% Start of document
+\begin{document}
+
+\begin{center}
+    \Large\textbf{ECE 470: Project Update 1}
+    \end{center}
+    \newline
+    \hspace*{\fill} \normalsize{Team: Jeffery Zhou, Kenneth Tochihara, Charlie Ray} 
+    \newline
+    \hspace*{\fill} TA: Dhruv Mathur
+    \newline
+    \hspace*{\fill} Section: Monday 9AM
+    \newline
+    \hspace*{\fill} Team Name: GouBot
+	\pagenumbering{arabic}
+
+\section*{Brief Project Update}\label{introduction}
+
+The goal of this project is to create a robotic dog that can fetch a ball and bring it back home. We envisioned this robot to be on wheels which could be designed using URDF like we learned in class or by importing a CAD image made separately using Solidworks. GouBot is derived from the word "Gou" translates to "dog" in Mandarin and is the reason behind the naming convention for this project. 
+
+Using the given Ubuntu Image, ECE470VM, a virtual machine (VM) was set up on a computer with VMware Fusion. This was done to minimize the amount of overhead in setup and to quickly establish a working environment to interact with the robot. To test the simulation environment, modifications were made to the \verb|lab2andDriver| package to create an initial environment of interacting with the UR3 robot. Using the content from lab2, principles of Robot Operating System (ROS) was applied to verify connections between the Gazebo simulator and the Python controller. Nodes, publications, and subscriptions were established to verify the movements of the joint and the gripping end-effector in our executions. 
+
+After initializing these elements, it was essential to test the robot by writing some simple move commands. To test the robot and verify that the Gazebo environment was fully functional and compatible with ROS, several commands were sent to the robot. First it rotated each joint by $30 \degree$ and rotated back to its home position using the following commands.
+
+\begin{quote}
+\singlespacing
+\begin{lstlisting}[language=python]
+# loop through joints
+for idx in range(6):
+    # log index of joint
+    rospy.loginfo("Sending offsets for joint " + str(idx + 1) +  "...")
+    
+    # offset joint by 30 degrees
+    joint_angles[idx] += np.radians(30)
+    move_arm(pub_command, loop_rate, joint_angles, 4.0, 4.0)
+    
+    # return joint back to original location
+    joint_angles[idx] -= np.radians(30)
+    move_arm(pub_command, loop_rate, joint_angles, 4.0, 4.0)
+\end{lstlisting}
+\end{quote}
+
+Other the gripper input and output values were tested by verifying the messages so that the user could see if the gripper was turned on or off at a given time. Furthermore, it tested the ability read gripper sensor inputs to further verify that sensor inputs were established from the simulator. 
+
+The tests in Gazebo using ROS were recorded in the \href{https://www.youtube.com/playlist?list=PLUgYn1EdVdaukTL5irfwSSML7CPnV4CY7}{YouTube playlist} and in the codebase on \href{https://github.com/ktt3/ae482_goubot}{GitHub}.
+\end{document}

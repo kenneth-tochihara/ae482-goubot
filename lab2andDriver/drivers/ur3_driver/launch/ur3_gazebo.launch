@@ -32,7 +32,7 @@
   <!-- load other controllers -->
   <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false" output="screen" args="load joint_group_position_controller" />
 
-  <!-- <node name="spawn_block" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/block.urdf -urdf -model block" /> -->
+  <node name="spawn_block" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/ur3.sdf -urdf -model block -x -1.0 -y 1.0 -z 0.1" />
 
   <node name="spawn_camera" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/camera.urdf -urdf -model camera -x 0.29 -y 0.105 -z 0.92" />
 

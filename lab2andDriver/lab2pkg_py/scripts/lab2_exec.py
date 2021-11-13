@@ -24,6 +24,11 @@ SPIN_RATE = 20
 # UR3 home location
 home = np.radians([120, -90, 90, -90, -90, 0])
 
+# Hanoi tower location 1
+Q11 = [120*pi/180.0, -56*pi/180.0, 124*pi/180.0, -158*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+Q13 = [120*pi/180.0, -72*pi/180.0, 120*pi/180.0, -137*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+
 thetas = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 digital_in_0 = 0
@@ -37,32 +42,33 @@ current_position_set = False
 # UR3 current position, using home position for initialization
 current_position = copy.deepcopy(home)
 
+############## Your Code Start Here ##############
+"""
+TODO: Initialize Q matrix
+"""
 
-def gripper_callback(msg):
-    """Whenever ur3/gripper_input publishes info this callback function is called for the gripper.
+Q = [ [Q11, Q12, Q13], \
+      [Q11, Q12, Q13], \
+      [Q11, Q12, Q13] ]
+############### Your Code End Here ###############
 
-    Args:
-        msg (msg): Message published by ur3/gripper_input.
-    """
+############## Your Code Start Here ##############
 
-    global digital_in_0
-    global analog_in_0
-    global analog_in_1
-    global current_gripper_set
-
-    digital_in_0 = msg.DIGIN
-    analog_in_0 = msg.AIN0
-    analog_in_1 = msg.AIN1
-
-    current_gripper_set = True
+"""
+TODO: define a ROS topic callback funtion for getting the state of suction cup
+Whenever ur3/gripper_input publishes info this callback function is called.
+"""
 
 
+
+
+############### Your Code End Here ###############
+
+
+"""
+Whenever ur3/position publishes info, this callback function is called.
+"""
 def position_callback(msg):
-    """Whenever ur3/position publishes info, this callback function is called for the position.
-
-    Args:
-        msg (msg): Message published by ur3/position.
-    """
 
     global thetas
     global current_position
@@ -86,16 +92,6 @@ def position_callback(msg):
 
 
 def gripper(pub_cmd, loop_rate, io_0):
-    """[summary]
-
-    Args:
-        pub_cmd ([type]): [description]
-        loop_rate ([type]): [description]
-        io_0 (bool): Sets state of gripper
-
-    Returns:
-        int: Verifies success of gripper
-    """
 
     global SPIN_RATE
     global thetas
@@ -140,18 +136,6 @@ def gripper(pub_cmd, loop_rate, io_0):
 
 
 def move_arm(pub_cmd, loop_rate, dest, vel, accel):
-    """[summary]
-
-    Args:
-        pub_cmd (Publisher): Object to callback instantaneous location of roobot
-        loop_rate (Rate): Rate in which data is ingested
-        dest (list): A list of angles of theta (theta1 - theta6) for all the joints
-        vel (float): Velocity of each joint angle in deg/s
-        accel (float): acceleration of each joint angle in deg/s^2
-
-    Returns:
-        int: Verifies success of move
-    """
 
     global thetas
     global SPIN_RATE
@@ -168,7 +152,7 @@ def move_arm(pub_cmd, loop_rate, dest, vel, accel):
     pub_cmd.publish(driver_msg)
 
     loop_rate.sleep()
-    
+
     while(at_goal == 0):
 
         if( abs(thetas[0]-driver_msg.destination[0]) < 0.0005 and \
@@ -194,6 +178,24 @@ def move_arm(pub_cmd, loop_rate, dest, vel, accel):
     return error
 
 
+############## Your Code Start Here ##############
+
+def move_block(pub_cmd, loop_rate, start_loc, start_height, \
+               end_loc, end_height):
+    global Q
+
+    ### Hint: Use the Q array to map out your towers by location and "height".
+
+    error = 0
+
+
+
+    return error
+
+
+############### Your Code End Here ###############
+
+
 def main():
 
     global home
@@ -206,55 +208,83 @@ def main():
     # Initialize publisher for ur3/command with buffer size of 10
     pub_command = rospy.Publisher('ur3/command', command, queue_size=10)
 
-    # Initialize subscriber to ur3/position and callback fuction each time data is published
+    # Initialize subscriber to ur3/position and callback fuction
+    # each time data is published
     sub_position = rospy.Subscriber('ur3/position', position, position_callback)
 
-    # Initialize subscriber to ur3/position and callback fuction each time data is published
-    sub_gripper = rospy.Subscriber('ur3/gripper', gripper_input, gripper_callback)
+    ############## Your Code Start Here ##############
+    # TODO: define a ROS subscriber for ur3/gripper_input message and corresponding callback function
+
+
+    ############### Your Code End Here ###############
+
+
+    ############## Your Code Start Here ##############
+    # TODO: modify the code below so that program can get user input
+
+    input_done = 0
+    loop_count = 0
+
+    while(not input_done):
+        input_string = raw_input("Enter number of loops <Either 1 2 3 or 0 to quit> ")
+        print("You entered " + input_string + "\n")
+
+        if(int(input_string) == 1):
+            input_done = 1
+            loop_count = 1
+        elif (int(input_string) == 2):
+            input_done = 1
+            loop_count = 2
+        elif (int(input_string) == 3):
+            input_done = 1
+            loop_count = 3
+        elif (int(input_string) == 0):
+            print("Quitting... ")
+            sys.exit()
+        else:
+            print("Please just enter the character 1 2 3 or 0 to quit \n\n")
+
+
+
+
+
+    ############### Your Code End Here ###############
 
     # Check if ROS is ready for operation
     while(rospy.is_shutdown()):
         print("ROS is shutdown!")
+
     rospy.loginfo("Sending Goals ...")
+
     loop_rate = rospy.Rate(SPIN_RATE)
 
-    # move arm to home
-    move_arm(pub_command, loop_rate, home, 4.0, 4.0)
-    joint_angles = home
-    
-    # loop through joints
-    for idx in range(6):
-        
-        # log index of joint
-        rospy.loginfo("Sending offsets for joint " + str(idx + 1) +  "...")
-        
-        # offset joint by 30 degrees
-        joint_angles[idx] += np.radians(30)
-        move_arm(pub_command, loop_rate, joint_angles, 4.0, 4.0)
-        
-        # return joint back to original location
-        joint_angles[idx] -= np.radians(30)
-        move_arm(pub_command, loop_rate, joint_angles, 4.0, 4.0)
+    ############## Your Code Start Here ##############
+    # TODO: modify the code so that UR3 can move tower accordingly from user input
 
-   
-    # send suction_on command to gripper
-    rospy.loginfo("Sending suction for gripper...")
-    gripper(pub_command, loop_rate, suction_on)
-    
-    # verify that the gripper did not grip but suction is on
-    if (digital_in_0 == 0) and current_io_0: error = 0
-    else: error = 1
-    
-    # send suction_off command to gripper
+    while(loop_count > 0):
+
+        move_arm(pub_command, loop_rate, home, 4.0, 4.0)
+
+        rospy.loginfo("Sending goal 1 ...")
+        move_arm(pub_command, loop_rate, Q[0][0], 4.0, 4.0)
+
+        gripper(pub_command, loop_rate, suction_on)
+        # Delay to make sure suction cup has grasped the block
+        time.sleep(1.0)
+
+        rospy.loginfo("Sending goal 2 ...")
+        move_arm(pub_command, loop_rate, Q[1][1], 4.0, 4.0)
+
+        rospy.loginfo("Sending goal 3 ...")
+        move_arm(pub_command, loop_rate, Q[2][0], 4.0, 4.0)
+
+        loop_count = loop_count - 1
+
     gripper(pub_command, loop_rate, suction_off)
-    
-    # verify that the gripper suction is off
-    if not current_io_0: error = 0
-    else: error = 1
-    
-    # print test results
-    if error == 0: rospy.loginfo("Success!")
-    else: rospy.loginfo("Failed!")
+
+
+
+    ############### Your Code End Here ###############
 
 
 if __name__ == '__main__':

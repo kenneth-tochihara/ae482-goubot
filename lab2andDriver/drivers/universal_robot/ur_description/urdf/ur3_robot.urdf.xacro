@@ -10,17 +10,19 @@
   <!-- ur3 -->
   <xacro:include filename="$(find ur_description)/urdf/ur3.urdf.xacro" />
 
+  <!-- cartopole -->
+  <xacro:include filename="$(find ur_description)/urdf/myrobot.xacro" />
+
+
   <!-- arm -->
   <xacro:ur3_robot prefix="" joint_limited="false"
     transmission_hw_interface="$(arg transmission_hw_interface)"
   />
 
-  <link name="world" />
-
-  <joint name="world_joint" type="fixed">
-    <parent link="world" />
+  <joint name="ur3_cart_joint" type="fixed">
+    <parent link="chassis" />
     <child link = "base_link" />
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0" />
   </joint>
 
 </robot>

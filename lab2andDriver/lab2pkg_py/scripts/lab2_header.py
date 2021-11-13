@@ -1,12 +1,12 @@
 from ur3_driver.msg import command
 from ur3_driver.msg import position
 from ur3_driver.msg import gripper_input
+from geometry_msgs.msg import Twist
 
 """
 command msg
 ------------------------
 float64[] destination
-float64[] wheel_velocity_commands
 float64 v
 float64 a
 bool io_0
@@ -23,5 +23,11 @@ gripper_input msg
 int32 DIGIN 
 float64 AIN0
 float64 AIN1
+
+
+Twist msg
+------------------------
+linear
+angular
 
 """

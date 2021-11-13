@@ -6,13 +6,11 @@
 
   <!-- common stuff -->
   <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
-
   <!-- ur3 -->
   <xacro:include filename="$(find ur_description)/urdf/ur3.urdf.xacro" />
 
-  <!-- cartopole -->
+  <!-- cart -->
   <xacro:include filename="$(find ur_description)/urdf/myrobot.xacro" />
-
 
   <!-- arm -->
   <xacro:ur3_robot prefix="" joint_limited="false"
@@ -24,5 +22,6 @@
     <child link = "base_link" />
     <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0" />
   </joint>
+  
 
 </robot>

@@ -6,6 +6,7 @@ from ur3_driver.msg import gripper_input
 command msg
 ------------------------
 float64[] destination
+float64[] wheel_velocity_commands
 float64 v
 float64 a
 bool io_0

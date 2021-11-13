@@ -17,17 +17,16 @@ import yaml
 import sys
 from math import pi
 from lab2_header import *
+from rospy.client import spin
 
 # 20Hz
 SPIN_RATE = 20
 
 # UR3 home location
 home = np.radians([120, -90, 90, -90, -90, 0])
+zero_position = np.radians([180, 0, 0, 0, 0, 0])
 
-# Hanoi tower location 1
-Q11 = [120*pi/180.0, -56*pi/180.0, 124*pi/180.0, -158*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-Q13 = [120*pi/180.0, -72*pi/180.0, 120*pi/180.0, -137*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+wheel_velocities = [0, 0]
 
 thetas = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
@@ -47,9 +46,6 @@ current_position = copy.deepcopy(home)
 TODO: Initialize Q matrix
 """
 
-Q = [ [Q11, Q12, Q13], \
-      [Q11, Q12, Q13], \
-      [Q11, Q12, Q13] ]
 ############### Your Code End Here ###############
 
 ############## Your Code Start Here ##############
@@ -73,6 +69,7 @@ def position_callback(msg):
     global thetas
     global current_position
     global current_position_set
+    global wheel_velocities
 
     thetas[0] = msg.position[0]
     thetas[1] = msg.position[1]
@@ -80,6 +77,9 @@ def position_callback(msg):
     thetas[3] = msg.position[3]
     thetas[4] = msg.position[4]
     thetas[5] = msg.position[5]
+
+    # wheel_velocities[0] = msg.current_wheel_velocities[0]
+    # wheel_velocities[1] = msg.current_wheel_velocities[1]
 
     current_position[0] = thetas[0]
     current_position[1] = thetas[1]
@@ -135,6 +135,19 @@ def gripper(pub_cmd, loop_rate, io_0):
     return error
 
 
+def spin_wheel(pub_cmd, loop_rate, vels):
+    global wheel_velocities
+
+    driver_msg = command()
+    driver_msg.wheel_velocity_commands[0] = vels[0]
+    driver_msg.wheel_velocity_commands[1] = vels[1]
+    pub_cmd.publish(driver_msg)
+
+    time.sleep(5)
+
+    
+
+
 def move_arm(pub_cmd, loop_rate, dest, vel, accel):
 
     global thetas
@@ -178,21 +191,6 @@ def move_arm(pub_cmd, loop_rate, dest, vel, accel):
     return error
 
 
-############## Your Code Start Here ##############
-
-def move_block(pub_cmd, loop_rate, start_loc, start_height, \
-               end_loc, end_height):
-    global Q
-
-    ### Hint: Use the Q array to map out your towers by location and "height".
-
-    error = 0
-
-
-
-    return error
-
-
 ############### Your Code End Here ###############
 
 
@@ -212,44 +210,6 @@ def main():
     # each time data is published
     sub_position = rospy.Subscriber('ur3/position', position, position_callback)
 
-    ############## Your Code Start Here ##############
-    # TODO: define a ROS subscriber for ur3/gripper_input message and corresponding callback function
-
-
-    ############### Your Code End Here ###############
-
-
-    ############## Your Code Start Here ##############
-    # TODO: modify the code below so that program can get user input
-
-    input_done = 0
-    loop_count = 0
-
-    while(not input_done):
-        input_string = raw_input("Enter number of loops <Either 1 2 3 or 0 to quit> ")
-        print("You entered " + input_string + "\n")
-
-        if(int(input_string) == 1):
-            input_done = 1
-            loop_count = 1
-        elif (int(input_string) == 2):
-            input_done = 1
-            loop_count = 2
-        elif (int(input_string) == 3):
-            input_done = 1
-            loop_count = 3
-        elif (int(input_string) == 0):
-            print("Quitting... ")
-            sys.exit()
-        else:
-            print("Please just enter the character 1 2 3 or 0 to quit \n\n")
-
-
-
-
-
-    ############### Your Code End Here ###############
-
     # Check if ROS is ready for operation
     while(rospy.is_shutdown()):
         print("ROS is shutdown!")
@@ -258,33 +218,21 @@ def main():
 
     loop_rate = rospy.Rate(SPIN_RATE)
 
-    ############## Your Code Start Here ##############
-    # TODO: modify the code so that UR3 can move tower accordingly from user input
 
-    while(loop_count > 0):
+    spin_wheel(pub_command, loop_rate, [1, 1])
 
-        move_arm(pub_command, loop_rate, home, 4.0, 4.0)
-
-        rospy.loginfo("Sending goal 1 ...")
-        move_arm(pub_command, loop_rate, Q[0][0], 4.0, 4.0)
-
-        gripper(pub_command, loop_rate, suction_on)
-        # Delay to make sure suction cup has grasped the block
-        time.sleep(1.0)
-
-        rospy.loginfo("Sending goal 2 ...")
-        move_arm(pub_command, loop_rate, Q[1][1], 4.0, 4.0)
-
-        rospy.loginfo("Sending goal 3 ...")
-        move_arm(pub_command, loop_rate, Q[2][0], 4.0, 4.0)
-
-        loop_count = loop_count - 1
-
-    gripper(pub_command, loop_rate, suction_off)
+    val = 0
+    while True:
+        while val > -np.pi:
+            thetas[1] = val
+            move_arm(pub_command, loop_rate, thetas, 4.0, 4.0)
+            val -= 0.1
+        while val < 0.:
+            thetas[1] = val
+            move_arm(pub_command, loop_rate, thetas, 4.0, 4.0)
+            val += 0.1
 
 
-
-    ############### Your Code End Here ###############
 
 
 if __name__ == '__main__':

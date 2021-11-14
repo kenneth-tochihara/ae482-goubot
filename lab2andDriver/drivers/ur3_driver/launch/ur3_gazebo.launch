@@ -27,12 +27,16 @@
   <rosparam file="$(find ur_gazebo)/controller/arm_controller_ur3.yaml" command="load"/>
   <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller" respawn="false" output="screen"/>
 
+  <!-- start cart controller -->
+  <!-- <rosparam file="$(find ur_gazebo)/controller/cart_controller.yaml" command="load"/> -->
+  <node name="cart_controller_spawner" pkg="controller_manager" type="controller_manager" args="cart_controller group_position_controller" respawn="false" output="screen"/> 
+
   <!-- load other controllers -->
   <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false" output="screen" args="load joint_group_position_controller" />
 
   <node name="cart_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false" output="screen" args="load differential_drive_controller" ns="/differential_drive_controller"/>
 
-  <!-- <node name="spawn_block" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/block.urdf -urdf -model block" /> -->
+  <node name="spawn_block" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/block.urdf -urdf -model block -x 0.3 -y 0.2 -z 0" />
 
   <node name="spawn_camera" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/camera.urdf -urdf -model camera -x 0.29 -y 0.105 -z 0.92" />
 

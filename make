@@ -15,7 +15,7 @@ done
 if $found
 then
     rm -r ~/"$catkin_folder"/src/lab2andDriver/
-    cp -R ~/ae482_goubot/lab2andDriver ~/"$catkin_folder"/src
+    cp -R "$cwd"/lab2andDriver ~/"$catkin_folder"/src
     echo "updating directory"
 else
     mkdir ~/catkin

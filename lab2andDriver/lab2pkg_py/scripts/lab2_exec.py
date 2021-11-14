@@ -280,10 +280,10 @@ def main():
     sub_input = rospy.Subscriber('ur3/gripper_input', gripper_input, gripper_callback)
     
     # Initialize publisher for /cmd_vel
-    pub_twist = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+    pub_twist = rospy.Publisher('/robot/cmd_vel', Twist, queue_size=10)
     
     # Initialize subscribe to /cmd_vel
-    sub_twist = rospy.Subscriber('/cmd_vel', Twist, twist_callback)
+    sub_twist = rospy.Subscriber('/robot/cmd_vel', Twist, twist_callback)
 
     # Check if ROS is ready for operation
     while(rospy.is_shutdown()):

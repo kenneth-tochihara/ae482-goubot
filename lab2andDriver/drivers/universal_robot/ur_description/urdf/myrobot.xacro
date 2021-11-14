@@ -123,4 +123,27 @@
     <joint_properties damping="0.0" friction="0.0"/>
   </joint>
 
+  <transmission name="left_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="left_wheel_hinge">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="leftMotor">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>10</mechanicalReduction>
+      </actuator>
+    </transmission>
+
+    <transmission name="right_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="right_wheel_hinge">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="rightMotor">
+        <hardwareInterface>EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>10</mechanicalReduction>
+      </actuator>
+    </transmission>
+
+
 </robot>

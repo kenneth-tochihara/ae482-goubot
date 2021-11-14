@@ -6,6 +6,7 @@
 
   <!-- common stuff -->
   <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
+  
   <!-- ur3 -->
   <xacro:include filename="$(find ur_description)/urdf/ur3.urdf.xacro" />
 

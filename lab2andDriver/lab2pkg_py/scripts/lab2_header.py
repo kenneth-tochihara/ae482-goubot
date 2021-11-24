@@ -27,7 +27,14 @@ float64 AIN1
 
 Twist msg
 ------------------------
-linear
-angular
+geometry_msgs/Vector3 linear
+  float64 x
+  float64 y
+  float64 z
+geometry_msgs/Vector3 angular
+  float64 x
+  float64 y
+  float64 z
+
 
 """

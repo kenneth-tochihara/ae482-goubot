@@ -3,8 +3,9 @@
 
   <gazebo>
     <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
-      <robotNamespace>/robot</robotNamespace>
+      <robotNamespace>/differential_drive</robotNamespace>
       <legacyMode>True</legacyMode>
+      <!-- <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType> -->
       <alwaysOn>true</alwaysOn>
       <updateRate>20</updateRate>
       <leftJoint>left_wheel_hinge</leftJoint>
@@ -18,6 +19,10 @@
       <robotBaseFrame>chassis</robotBaseFrame>
       <publishWheelTF>false</publishWheelTF>
       <publishOdom>false</publishOdom>
+      <publishOdomTF>true</publishOdomTF>
+      <publishWheelJointState>false</publishWheelJointState>
+      <wheelAcceleration>0</wheelAcceleration>
+      <wheelTorque>5</wheelTorque>
       <odometrySource>world</odometrySource>
       <publishTf>1</publishTf>
       <rosDebugLevel>na</rosDebugLevel>

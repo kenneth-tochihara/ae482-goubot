@@ -15,10 +15,12 @@ from std_msgs.msg import Bool
 from std_srvs.srv import Empty
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Point
+from geometry_msgs.msg import Twist
 from gazebo_msgs.msg import LinkStates
 
 gazebo_pos = None
 gripper_is_on = False
+gazebo_twist = None
 
 def get_duration(dest, vel):
     global gazebo_pos
@@ -62,7 +64,6 @@ def ctrl_sub_callback(data):
 
     cmd_pub.publish(jt)
 
-
 # Callback function for the subscriber that subscribe to "joint_states"
 def gazebo_pos_sub_callback(data):
     global gazebo_pos
@@ -98,6 +99,17 @@ def link_states_sub_callback(data):
             gripper_pose = data.pose[i]
             gripper_position_pub.publish(gripper_pose.position)
             return
+        
+# Callback function for the subscriber that subscribe to "differential_drive/cmd_vel"
+def diff_drive_sub_callback(data):
+    
+    twist = Twist()
+    twist.linear.x = data.linear.x
+    twist.linear.y = data.linear.y
+    twist.linear.z = data.linear.z  
+    twist.angular.x = data.angular.x
+    twist.angular.y = data.angular.y
+    twist.angular.z = data.angular.z
 
 if __name__ == '__main__':
     # Initialize ROS node
@@ -108,6 +120,7 @@ if __name__ == '__main__':
     rospy.Subscriber('ur3/command', command, ctrl_sub_callback)
     rospy.Subscriber('gripper/grasping', Bool, gripper_sub_callback)
     rospy.Subscriber('gazebo/link_states', LinkStates, link_states_sub_callback)
+    rospy.Subscriber('differential_drive/cmd_vel', Twist, diff_drive_sub_callback)
 
     pos_pub = rospy.Publisher('ur3/position', position, queue_size=10)
     cmd_pub = rospy.Publisher('arm_controller/command', JointTrajectory, queue_size=10)

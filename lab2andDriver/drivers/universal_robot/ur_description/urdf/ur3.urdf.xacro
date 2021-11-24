@@ -8,7 +8,7 @@
   <xacro:include filename="$(find ur_description)/urdf/ur.transmission.xacro" />
   <xacro:include filename="$(find ur_description)/urdf/ur.gazebo.xacro" />
 
-   <xacro:macro name="cylinder_inertial" params="radius length mass *origin">
+  <xacro:macro name="cylinder_inertial" params="radius length mass *origin">
     <inertial>
       <mass value="${mass}" />
       <xacro:insert_block name="origin" />

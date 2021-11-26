@@ -30,9 +30,9 @@ joint_group_position_controller:
      - wrist_3_joint
 cart_controller:
   type        : "diff_drive_controller/DiffDriveController"
-  left_wheel  : 'wheel_left_hinge'
-  right_wheel : 'wheel_right_hinge'
-  publish_rate: 50.0               # default: 50
+  left_wheel  : 'left_wheel_hinge'
+  right_wheel : 'right_wheel_hinge'
+  publish_rate: 20.0               # default: 50
   pose_covariance_diagonal : [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
   twist_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
 
@@ -50,25 +50,23 @@ cart_controller:
   cmd_vel_timeout: 0.25
 
   # Base frame_id
-  base_frame_id: chassis #default: base_link
+  base_frame_id: base_link #default: base_link
 
   # Velocity and acceleration limits
   # Whenever a min_* is unspecified, default to -max_*
   linear:
     x:
-      has_velocity_limits    : true
-      max_velocity           : 1.0  # m/s
-      min_velocity           : -0.5 # m/s
-      has_acceleration_limits: true
-      max_acceleration       : 0.8  # m/s^2
-      min_acceleration       : -0.4 # m/s^2
-      has_jerk_limits        : true
-      max_jerk               : 5.0  # m/s^3
+      has_velocity_limits    : false
+      max_velocity           : 2.0  # m/s
+      has_acceleration_limits: false
+      max_acceleration       : 20.0  # m/s^2
+      has_jerk_limits        : false
+      max_jerk               : 10.0  # m/s^3
   angular:
     z:
-      has_velocity_limits    : true
+      has_velocity_limits    : false
       max_velocity           : 1.7  # rad/s
-      has_acceleration_limits: true
+      has_acceleration_limits: false
       max_acceleration       : 1.5  # rad/s^2
-      has_jerk_limits        : true
+      has_jerk_limits        : false
       max_jerk               : 2.5  # rad/s^3

@@ -101,15 +101,15 @@ def link_states_sub_callback(data):
             return
         
 # Callback function for the subscriber that subscribe to "differential_drive/cmd_vel"
-def diff_drive_sub_callback(data):
-    
-    twist = Twist()
-    twist.linear.x = data.linear.x
-    twist.linear.y = data.linear.y
-    twist.linear.z = data.linear.z  
-    twist.angular.x = data.angular.x
-    twist.angular.y = data.angular.y
-    twist.angular.z = data.angular.z
+def cart_sub_callback(data):
+    global gazebo_twist
+    gazebo_twist = Twist()
+    gazebo_twist.linear.x = data.linear.x
+    gazebo_twist.linear.y = data.linear.y
+    gazebo_twist.linear.z = data.linear.z  
+    gazebo_twist.angular.x = data.angular.x
+    gazebo_twist.angular.y = data.angular.y
+    gazebo_twist.angular.z = data.angular.z
 
 if __name__ == '__main__':
     # Initialize ROS node
@@ -120,12 +120,13 @@ if __name__ == '__main__':
     rospy.Subscriber('ur3/command', command, ctrl_sub_callback)
     rospy.Subscriber('gripper/grasping', Bool, gripper_sub_callback)
     rospy.Subscriber('gazebo/link_states', LinkStates, link_states_sub_callback)
-    rospy.Subscriber('differential_drive/cmd_vel', Twist, diff_drive_sub_callback)
+    rospy.Subscriber('ur3/cmd_vel', Twist, cart_sub_callback)
 
     pos_pub = rospy.Publisher('ur3/position', position, queue_size=10)
     cmd_pub = rospy.Publisher('arm_controller/command', JointTrajectory, queue_size=10)
     gripper_input_pub = rospy.Publisher('ur3/gripper_input', gripper_input, queue_size=10)
     gripper_position_pub = rospy.Publisher('gripper/position', Point, queue_size=10)
+    diff_drive_pub = rospy.Publisher('cart_controller/cmd_vel', Twist, queue_size=10)
 
     try:
         while not rospy.is_shutdown():

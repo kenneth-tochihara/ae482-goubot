@@ -4,26 +4,26 @@
 
   <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
 
-  <!-- common stuff -->
+  <!-- common macros -->
   <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
 
-  <!-- ur3 -->
+  <!-- ur3 macros-->
   <xacro:include filename="$(find ur_description)/urdf/ur3.urdf.xacro" />
 
-  <!-- cart -->
+  <!-- cart macros-->
   <xacro:include filename="$(find ur_description)/urdf/myrobot.xacro" />
 
-  <!-- arm -->
+  <!-- ur3 -->
   <xacro:ur3_robot prefix="" joint_limited="false"
-    transmission_hw_interface="$(arg transmission_hw_interface)"
-  />
+    transmission_hw_interface="$(arg transmission_hw_interface)" />
 
+  <!-- cart -->
   <xacro:cart_robot/>
 
   <joint name="ur3_cart_joint" type="fixed">
-    <parent link="chassis" />
-    <child link = "base_link" />
-    <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0" />
+    <parent link="base_link" />
+    <child link = "chassis" />
+    <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0" />
   </joint>
   
 

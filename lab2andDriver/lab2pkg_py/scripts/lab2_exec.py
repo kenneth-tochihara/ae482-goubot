@@ -15,18 +15,19 @@ import rospkg
 import numpy as np
 import yaml
 import sys
+import time
 from math import pi
 from lab2_header import *
 from rospy.client import spin
 
 # 20Hz
-SPIN_RATE = 20
+SPIN_RATE = 40
 
 # UR3 home location
 home = np.radians([120, -90, 90, -90, -90, 0])
 zero_position = np.radians([180, 0, 0, 0, 0, 0])
 
-twist = Twist()
+# twist = Twist()
 
 thetas = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
@@ -43,7 +44,7 @@ current_twist_set = False
 current_position = copy.deepcopy(home)
 
 # Robot current velocities
-current_twist = Twist()
+# current_twist = Twist()
 
 ############## Your Code Start Here ##############
 """
@@ -102,28 +103,28 @@ def gripper_callback(msg):
 """
 Whenever /cmd_vel publishes info this callback function is called.
 """
-def twist_callback(msg):
+# def twist_callback(msg):
 
-    global twist
-    global current_twist
-    global current_twist_set
+#     global twist
+#     global current_twist
+#     global current_twist_set
 
-    rospy.loginfo(msg)
-    twist.linear.x = msg.linear.x
-    twist.linear.y = msg.linear.y
-    twist.linear.z = msg.linear.z  
-    twist.angular.x = msg.angular.x
-    twist.angular.y = msg.angular.y
-    twist.angular.z = msg.angular.z
+#     rospy.loginfo(msg)
+#     twist.linear.x = msg.linear.x
+#     twist.linear.y = msg.linear.y
+#     twist.linear.z = msg.linear.z  
+#     twist.angular.x = msg.angular.x
+#     twist.angular.y = msg.angular.y
+#     twist.angular.z = msg.angular.z
     
-    current_twist.linear.x = twist.linear.x
-    current_twist.linear.y = twist.linear.y
-    current_twist.linear.z = twist.linear.z  
-    current_twist.angular.x = twist.angular.x
-    current_twist.angular.y = twist.angular.y
-    current_twist.angular.z = twist.angular.z
+#     current_twist.linear.x = twist.linear.x
+#     current_twist.linear.y = twist.linear.y
+#     current_twist.linear.z = twist.linear.z  
+#     current_twist.angular.x = twist.angular.x
+#     current_twist.angular.y = twist.angular.y
+#     current_twist.angular.z = twist.angular.z
 
-    current_twist_set = True
+#     current_twist_set = True
 
 def gripper(pub_cmd, loop_rate, io_0):
 
@@ -234,17 +235,17 @@ def move_cart(pub_cmd, loop_rate, dest_twist):
 
     loop_rate.sleep()
 
-    while at_goal == 1:
+    while at_goal == 0:
 
-        if( abs(twist.linear.x-driver_msg.linear.x) < 0.05 and \
-            abs(twist.linear.y-driver_msg.linear.y) < 0.05 and \
-            abs(twist.linear.z-driver_msg.linear.z) < 0.05 and \
-            abs(twist.angular.x-driver_msg.angular.x) < 0.05 and \
-            abs(twist.angular.y-driver_msg.angular.y) < 0.05 and \
-            abs(twist.angular.z-driver_msg.angular.z) < 0.05 ):
+        # if( abs(twist.linear.x-driver_msg.linear.x) < 0.05 and \
+        #     abs(twist.linear.y-driver_msg.linear.y) < 0.05 and \
+        #     abs(twist.linear.z-driver_msg.linear.z) < 0.05 and \
+        #     abs(twist.angular.x-driver_msg.angular.x) < 0.05 and \
+        #     abs(twist.angular.y-driver_msg.angular.y) < 0.05 and \
+        #     abs(twist.angular.z-driver_msg.angular.z) < 0.05 ):
 
-            at_goal = 1
-            rospy.loginfo("Goal is reached!")
+        at_goal = 1
+        rospy.loginfo("Goal is reached!")
 
         loop_rate.sleep()
 
@@ -280,7 +281,7 @@ def main():
     sub_input = rospy.Subscriber('ur3/gripper_input', gripper_input, gripper_callback)
     
     # Initialize publisher for /cmd_vel
-    pub_twist = rospy.Publisher('differential_drive/cmd_vel', Twist, queue_size=10)
+    pub_twist = rospy.Publisher('cart_controller/cmd_vel', Twist, queue_size=7)
     
     # Initialize subscribe to /cmd_vel
     # sub_twist = rospy.Subscriber('/differential_drive/cmd_vel', Twist, twist_callback)
@@ -295,11 +296,17 @@ def main():
 
     dest_twist = Twist()
     dest_twist.linear.x = 0.5
-    dest_twist.angular.z = 0.1
+    # dest_twist.angular.z = 0.1
     
     # while True:
     #     pub_twist.publish(dest_twist)
-    move_cart(pub_twist, loop_rate, dest_twist)
+    start_time = time.time()
+    while abs(start_time - time.time()) < 10:
+        print(start_time - time.time())
+        move_cart(pub_twist, loop_rate, dest_twist)
+    
+    for _i in range(40*5):
+        loop_rate.sleep() 
     
     print("done")
 

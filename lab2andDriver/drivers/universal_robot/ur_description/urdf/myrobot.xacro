@@ -148,9 +148,10 @@
 
     <gazebo>
       <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
-        <robotNamespace>/differential_drive</robotNamespace>
+        <robotNamespace>/cart_controller</robotNamespace>
         <legacyMode>True</legacyMode>
         <!-- <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType> -->
+        <!-- <bodyName>chassis</bodyName> -->
         <alwaysOn>true</alwaysOn>
         <updateRate>20</updateRate>
         <leftJoint>left_wheel_hinge</leftJoint>
@@ -161,13 +162,13 @@
         <commandTopic>cmd_vel</commandTopic>
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
-        <robotBaseFrame>chassis</robotBaseFrame>
-        <publishWheelTF>false</publishWheelTF>
-        <publishOdom>false</publishOdom>
+        <robotBaseFrame>base_link</robotBaseFrame>
+        <publishWheelTF>true</publishWheelTF>
+        <publishOdom>true</publishOdom>
         <publishOdomTF>true</publishOdomTF>
-        <publishWheelJointState>false</publishWheelJointState>
-        <wheelAcceleration>0</wheelAcceleration>
-        <wheelTorque>5</wheelTorque>
+        <publishWheelJointState>true</publishWheelJointState>
+        <wheelAcceleration>1.0</wheelAcceleration>
+        <wheelTorque>20</wheelTorque>
         <odometrySource>world</odometrySource>
         <publishTf>1</publishTf>
         <rosDebugLevel>na</rosDebugLevel>
@@ -183,15 +184,23 @@
 
     <gazebo reference="left_wheel">
       <selfCollide>true</selfCollide>
-      <mu1>0.2</mu1>
-      <mu2>0.2</mu2>
+      <mu1 value="1.0"/>
+      <mu2 value="1.0"/>
+      <kp  value="10000000.0" />
+      <kd  value="1.0" />
+      <fdir1 value="1 0 0"/>
+      <minDepth>0.02</minDepth>
       <material>Gazebo/Black</material>
     </gazebo>
 
     <gazebo reference="right_wheel">
       <selfCollide>true</selfCollide>
-      <mu1>0.2</mu1>
-      <mu2>0.2</mu2>
+      <mu1 value="1.0"/>
+      <mu2 value="1.0"/>
+      <kp  value="10000000.0" />
+      <kd  value="1.0" />
+      <fdir1 value="1 0 0"/>
+      <minDepth>0.02</minDepth>
       <material>Gazebo/Black</material>
     </gazebo>
   </xacro:macro>

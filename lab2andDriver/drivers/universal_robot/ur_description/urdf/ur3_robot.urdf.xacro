@@ -21,9 +21,9 @@
   <xacro:cart_robot/>
 
   <joint name="ur3_cart_joint" type="fixed">
-    <parent link="base_link" />
-    <child link = "chassis" />
-    <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0" />
+    <parent link="chassis" />
+    <child link = "base_link" />
+    <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0" />
   </joint>
   
 

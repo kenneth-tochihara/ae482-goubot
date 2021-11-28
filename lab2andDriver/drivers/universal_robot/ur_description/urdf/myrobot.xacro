@@ -158,7 +158,7 @@
         <rightJoint>right_wheel_hinge</rightJoint>
         <wheelSeparation>0.4</wheelSeparation>
         <wheelDiameter>0.1</wheelDiameter>
-        <torque>20</torque>
+        <torque>40</torque>
         <commandTopic>cmd_vel</commandTopic>
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
@@ -168,7 +168,7 @@
         <publishOdomTF>true</publishOdomTF>
         <publishWheelJointState>true</publishWheelJointState>
         <wheelAcceleration>1.0</wheelAcceleration>
-        <wheelTorque>20</wheelTorque>
+        <wheelTorque>40</wheelTorque>
         <odometrySource>world</odometrySource>
         <publishTf>1</publishTf>
         <rosDebugLevel>na</rosDebugLevel>

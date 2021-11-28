@@ -37,13 +37,14 @@ goal_G = [[0.2684808585461177, -0.16575428914965623, 0.],
          [0.26338096736614386, -0.10081618208925211, 0.]]
 
 # 20Hz
-SPIN_RATE = 20
+SPIN_RATE = 40
 
 # UR3 home location
 home = np.radians([120, -90, 90, -90, -90, 0])
 zero_position = np.radians([180, 0, 0, 0, 0, 0])
 
-twist = Twist()
+cart_twist = Twist()
+cart_pose = Pose()
 
 thetas = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
@@ -54,18 +55,13 @@ suction_on = True
 suction_off = False
 current_io_0 = False
 current_position_set = False
-current_twist_set = False
+current_odom_set = False
 
 # UR3 current position, using home position for initialization
 current_position = copy.deepcopy(home)
 
-# Robot current velocities
-current_twist = Twist()
-
-
-"""
-TODO: Initialize Q matrix
-"""
+# Robot current odometry
+current_odom = Odometry()
 
 
 """
@@ -103,30 +99,51 @@ def gripper_callback(msg):
     digital_in_0 = digital_in_0 & 1 
 
 """
-Whenever /cmd_vel publishes info this callback function is called.
+Whenever cart_controller/odom publishes info this callback function is called.
 """
-def twist_callback(msg):
+# TODO: Kenneth
+def odom_callback(msg):
 
-    global twist
-    global current_twist
-    global current_twist_set
+    global cart_twist
+    global cart_pose
+    global current_odom
+    global current_odom_set
 
-    rospy.loginfo(msg)
-    twist.linear.x = msg.linear.x
-    twist.linear.y = msg.linear.y
-    twist.linear.z = msg.linear.z  
-    twist.angular.x = msg.angular.x
-    twist.angular.y = msg.angular.y
-    twist.angular.z = msg.angular.z
+    # twist copy
+    cart_twist.linear.x = msg.twist.twist.linear.x
+    cart_twist.linear.y = msg.twist.twist.linear.y
+    cart_twist.linear.z = msg.twist.twist.linear.z  
+    cart_twist.angular.x = msg.twist.twist.angular.x
+    cart_twist.angular.y = msg.twist.twist.angular.y
+    cart_twist.angular.z = msg.twist.twist.angular.z
+        
+    # pose copy
+    cart_pose.position.x = msg.pose.pose.position.x
+    cart_pose.position.y = msg.pose.pose.position.y
+    cart_pose.position.z = msg.pose.pose.position.z  
+    cart_pose.orientation.x = msg.pose.pose.orientation.x
+    cart_pose.orientation.y = msg.pose.pose.orientation.y
+    cart_pose.orientation.z = msg.pose.pose.orientation.z
+    cart_pose.orientation.w = msg.pose.pose.orientation.w
     
-    current_twist.linear.x = twist.linear.x
-    current_twist.linear.y = twist.linear.y
-    current_twist.linear.z = twist.linear.z  
-    current_twist.angular.x = twist.angular.x
-    current_twist.angular.y = twist.angular.y
-    current_twist.angular.z = twist.angular.z
+    # twist save
+    current_odom.twist.twist.linear.x = cart_twist.linear.x
+    current_odom.twist.twist.linear.y = cart_twist.linear.y
+    current_odom.twist.twist.linear.z = cart_twist.linear.z  
+    current_odom.twist.twist.angular.x = cart_twist.angular.x
+    current_odom.twist.twist.angular.y = cart_twist.angular.y
+    current_odom.twist.twist.angular.z = cart_twist.angular.z
+    
+    # pose save
+    current_odom.pose.pose.position.x = cart_pose.position.x
+    current_odom.pose.pose.position.y = cart_pose.position.y
+    current_odom.pose.pose.position.z = cart_pose.position.z  
+    current_odom.pose.pose.orientation.x = cart_pose.orientation.x
+    current_odom.pose.pose.orientation.y = cart_pose.orientation.y
+    current_odom.pose.pose.orientation.z = cart_pose.orientation.z
+    current_odom.pose.pose.orientation.w = cart_pose.orientation.w
 
-    current_twist_set = True
+    current_odom_set = True
 
 def gripper(pub_cmd, loop_rate, io_0):
 
@@ -190,7 +207,7 @@ def move_arm(pub_cmd, loop_rate, dest, vel, accel):
 
     loop_rate.sleep()
 
-    while(at_goal == 0):
+    while(at_goal == 1):
 
         if( abs(thetas[0]-driver_msg.destination[0]) < 0.0005 and \
             abs(thetas[1]-driver_msg.destination[1]) < 0.0005 and \
@@ -221,7 +238,7 @@ def move_arm(pub_cmd, loop_rate, dest, vel, accel):
 
 def move_cart(pub_cmd, loop_rate, dest_twist):
 
-    global twist
+    global cart_twist
     global SPIN_RATE
 
     error = 0
@@ -241,16 +258,19 @@ def move_cart(pub_cmd, loop_rate, dest_twist):
 
     while at_goal == 0:
 
-        if( abs(twist.linear.x-driver_msg.linear.x) < 0.05 and \
-            abs(twist.linear.y-driver_msg.linear.y) < 0.05 and \
-            abs(twist.linear.z-driver_msg.linear.z) < 0.05 and \
-            abs(twist.angular.x-driver_msg.angular.x) < 0.05 and \
-            abs(twist.angular.y-driver_msg.angular.y) < 0.05 and \
-            abs(twist.angular.z-driver_msg.angular.z) < 0.05 ):
+        if( abs(cart_twist.linear.x-driver_msg.linear.x) < 0.05 and \
+            abs(cart_twist.linear.y-driver_msg.linear.y) < 0.05 and \
+            abs(cart_twist.linear.z-driver_msg.linear.z) < 0.05 and \
+            abs(cart_twist.angular.x-driver_msg.angular.x) < 0.05 and \
+            abs(cart_twist.angular.y-driver_msg.angular.y) < 0.05 and \
+            abs(cart_twist.angular.z-driver_msg.angular.z) < 0.05 ):
 
             at_goal = 1
             rospy.loginfo("Goal is reached!")
 
+        print(driver_msg)
+        print(cart_twist)
+        print()
         loop_rate.sleep()
 
         if(spin_count >  SPIN_RATE*5):
@@ -381,11 +401,11 @@ def main():
     # Intialize subscriber to ur3/gripper and callback function
     sub_input = rospy.Subscriber('ur3/gripper_input', gripper_input, gripper_callback)
     
-    # Initialize publisher for /cmd_vel
-    pub_twist = rospy.Publisher('cart_controller/cmd_vel', Twist, queue_size=1)
+    # Initialize publisher for cart_controller/cmd_vel
+    pub_twist = rospy.Publisher('ur3/cmd_vel', Twist, queue_size=10)
     
-    # Initialize subscribe to /cmd_vel
-    sub_twist = rospy.Subscriber('cart_controller/cmd_vel', Twist, twist_callback)
+    # Initialize subscribe to ur3/odom
+    sub_twist = rospy.Subscriber('ur3/odom', Odometry, odom_callback)
 
     # Check if ROS is ready for operation
     while(rospy.is_shutdown()):
@@ -395,7 +415,7 @@ def main():
 
     loop_rate = rospy.Rate(SPIN_RATE)
     
-    ic = ImageConverter(SPIN_RATE)
+    # ic = ImageConverter(SPIN_RATE)
 
     dest_twist = Twist()
     dest_twist.linear.x = 0.5
@@ -404,28 +424,43 @@ def main():
     
     # while True:
     #     pub_twist.publish(dest_twist)
-    # start_time = time.time()
+    start_time = time.time()
     # while abs(start_time - time.time()) < 10:
     #     # print(start_time - time.time())
-    #     move_cart(pub_twist, loop_rate, dest_twist)
+    # move_cart(pub_twist, loop_rate, dest_twist)
     
     # for _i in range(SPIN_RATE*5):
     #     loop_rate.sleep() 
     
-    move_block(pub_command, loop_rate, [0.30582680585318511, -0.16385970163279578, -0.1], [0.19886217857288158, -0.10150232111239771, -0.1], 4.0, 4.0)
+    # move_block(pub_command, loop_rate, [0.30582680585318511, -0.16385970163279578, -0.1], [0.19886217857288158, -0.10150232111239771, -0.1], 4.0, 4.0)
 
-    # val = 0
-    # while True:
-    #     while val > -np.pi:
-    #         thetas[1] = val
-    #         move_arm(pub_command, loop_rate, thetas, 4.0, 4.0)
-    #         print(thetas)
-    #         val -= 0.1
-    #     while val < 0.:
-    #         thetas[1] = val
-    #         move_arm(pub_command, loop_rate, thetas, 4.0, 4.0)
-    #         print(thetas)
-    #         val += 0.1
+    # Stock arm movement
+    Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    Q13 = [135*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    Q = [Q11, Q12, Q13]
+    
+    loop_count = 2
+    while(loop_count > 0):
+
+        move_arm(pub_command, loop_rate, home, 4.0, 4.0)
+
+        rospy.loginfo("Sending goal 1 ...")
+        move_arm(pub_command, loop_rate, Q[0], 4.0, 4.0)
+        time.sleep(1.0)
+
+        rospy.loginfo("Sending goal 2 ...")
+        move_arm(pub_command, loop_rate, Q[1], 4.0, 4.0)
+        time.sleep(1.0)
+
+        rospy.loginfo("Sending goal 3 ...")
+        move_arm(pub_command, loop_rate, Q[2], 4.0, 4.0)
+        time.sleep(1.0)
+        
+
+        loop_count = loop_count - 1
+
+    # gripper(pub_command, loop_rate, suction_off)
 
 
 if __name__ == '__main__':

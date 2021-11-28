@@ -19,7 +19,22 @@ import time
 from math import pi
 from lab2_header import *
 from lab2_func import *
+from blob_search import *
 from rospy.client import spin
+from cv_bridge import CvBridge
+
+# Position for UR3 not blocking the camera
+go_away = [270*PI/180.0, -90*PI/180.0, 90*PI/180.0, -90*PI/180.0, -90*PI/180.0, 135*PI/180.0]
+
+# Store world coordinates of green and light blue blocks
+xw_yw_G = []
+xw_yw_B = []
+
+# goals for the blocks
+goal_B = [[0.20582680585318511, -0.16385970163279578, 0.], 
+         [0.19886217857288158, -0.10150232111239771, 0.]]
+goal_G = [[0.2684808585461177, -0.16575428914965623, 0.],
+         [0.26338096736614386, -0.10081618208925211, 0.]]
 
 # 20Hz
 SPIN_RATE = 20
@@ -47,7 +62,7 @@ current_position = copy.deepcopy(home)
 # Robot current velocities
 current_twist = Twist()
 
-############## Your Code Start Here ##############
+
 """
 TODO: Initialize Q matrix
 """
@@ -305,6 +320,48 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
 
     return error
 
+class ImageConverter:
+
+    def __init__(self, SPIN_RATE):
+
+        self.bridge = CvBridge()
+        self.image_pub = rospy.Publisher("/image_converter/output_video", Image, queue_size=10)
+        self.image_sub = rospy.Subscriber("/cv_camera_node/image_raw", Image, self.image_callback)
+        self.loop_rate = rospy.Rate(SPIN_RATE)
+
+        # Check if ROS is ready for operation
+        while(rospy.is_shutdown()):
+            print("ROS is shutdown!")
+
+
+    def image_callback(self, data):
+
+        global xw_yw_G # store found green blocks in this list
+        global xw_yw_B # store found light blue blocks in this list
+
+        try:
+          # Convert ROS image to OpenCV image
+            raw_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        except CvBridgeError as e:
+            print(e)
+
+        cv_image = cv2.flip(raw_image, -1)
+        cv2.line(cv_image, (0,50), (640,50), (0,0,0), 5)
+
+        # You will need to call blob_search() function to find centers of green blocks
+        # and yellow blocks, and store the centers in xw_yw_G & xw_yw_Y respectively.
+
+        # If no blocks are found for a particular color, you can return an empty list,
+        # to xw_yw_G or xw_yw_Y.
+
+        # Remember, xw_yw_G & xw_yw_Y are in global coordinates, which means you will
+        # do coordinate transformation in the blob_search() function, namely, from
+        # the image frame to the global world frame.
+
+        xw_yw_G = blob_search(cv_image, "green")
+        xw_yw_B = blob_search(cv_image, "lblue")
+        # blob_search(cv_image, "orange")
+
 
 def main():
 
@@ -337,6 +394,8 @@ def main():
     rospy.loginfo("Sending Goals ...")
 
     loop_rate = rospy.Rate(SPIN_RATE)
+    
+    ic = ImageConverter(SPIN_RATE)
 
     dest_twist = Twist()
     dest_twist.linear.x = 0.5

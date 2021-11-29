@@ -21,6 +21,7 @@ from lab2_header import *
 from lab2_func import *
 from blob_search import *
 from rospy.client import spin
+from kinematics import *
 from cv_bridge import CvBridge
 
 # Position for UR3 not blocking the camera
@@ -41,7 +42,7 @@ SPIN_RATE = 40
 
 # UR3 home location
 home = np.radians([120, -90, 90, -90, -90, 0])
-zero_position = np.radians([180, 0, 0, 0, 0, 0])
+zero_position = np.radians([180, 0, 0, -90, 0, 0])
 
 cart_twist = Twist()
 cart_pose = Pose()
@@ -461,6 +462,35 @@ def main():
         loop_count = loop_count - 1
 
     # gripper(pub_command, loop_rate, suction_off)
+    
+    # pick up block
+    print("done")
+
+    x_des = 0.285
+    y_des = 0.2
+    z_des = 0.
+    yaw_des = 0.
+
+    move_arm(pub_command, loop_rate, zero_position, 4.0, 4.0)
+
+    time.sleep(1)
+
+    thetas = lab_invk(x_des, y_des, z_des, yaw_des)
+    move_arm(pub_command, loop_rate, thetas, 4.0, 4.0)
+    
+    z_des = -0.11
+    thetas = lab_invk(x_des, y_des, z_des, yaw_des)
+    move_arm(pub_command, loop_rate, thetas, 4.0, 4.0) 
+
+    time.sleep(5)
+
+    z_des = 0.1
+    thetas = lab_invk(x_des, y_des, z_des, yaw_des)
+    move_arm(pub_command, loop_rate, thetas, 4.0, 4.0) 
+
+    time.sleep(1)
+
+    move_arm(pub_command, loop_rate, zero_position, 4.0, 4.0)
 
 
 if __name__ == '__main__':

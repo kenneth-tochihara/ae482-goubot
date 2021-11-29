@@ -72,8 +72,8 @@ def ctrl_sub_callback(data):
 def gazebo_pos_sub_callback(data):
     global gazebo_pos
     gazebo_pos = list(data.position)
-    gazebo_pos = [gazebo_pos[2] + math.pi, gazebo_pos[1], gazebo_pos[0],
-                  gazebo_pos[3], gazebo_pos[4], gazebo_pos[5]]
+    gazebo_pos = [gazebo_pos[4] + math.pi, gazebo_pos[3], gazebo_pos[0],
+                  gazebo_pos[5], gazebo_pos[6], gazebo_pos[7]]
     pos_msg = position()    
     pos_msg.position = gazebo_pos
     pos_msg.isReady = True
@@ -104,17 +104,17 @@ def link_states_sub_callback(data):
             gripper_position_pub.publish(gripper_pose.position)
             return
         
-# Callback function for the subscriber that subscribe to "ur3/cmd_vel"
-def cmd_vel_sub_callback(data):
-    # global gazebo_cmd_vel
-    # gazebo_cmd_vel = copy.deepcopy(data)
-    cmd_vel_pub.publish(data)
+# # Callback function for the subscriber that subscribe to "ur3/cmd_vel"
+# def cmd_vel_sub_callback(data):
+#     # global gazebo_cmd_vel
+#     # gazebo_cmd_vel = copy.deepcopy(data)
+#     cmd_vel_pub.publish(data)
     
-# Callback function for the subscriber that subscribe to "cart_controller/odom"
-def odom_sub_callback(data):
-    # global gazebo_odom
-    # gazebo_odom = copy.deepcopy(data)
-    odom_pub.publish(data)
+# # Callback function for the subscriber that subscribe to "cart_controller/odom"
+# def odom_sub_callback(data):
+#     # global gazebo_odom
+#     # gazebo_odom = copy.deepcopy(data)
+#     odom_pub.publish(data)
     
 if __name__ == '__main__':
     # Initialize ROS node
@@ -125,15 +125,15 @@ if __name__ == '__main__':
     rospy.Subscriber('ur3/command', command, ctrl_sub_callback)
     rospy.Subscriber('gripper/grasping', Bool, gripper_sub_callback)
     rospy.Subscriber('gazebo/link_states', LinkStates, link_states_sub_callback)
-    rospy.Subscriber('ur3/cmd_vel', Twist, cmd_vel_sub_callback)
-    rospy.Subscriber('cart_controller/odom', Odometry, odom_sub_callback)
+    # rospy.Subscriber('ur3/cmd_vel', Twist, cmd_vel_sub_callback)
+    # rospy.Subscriber('cart_controller/odom', Odometry, odom_sub_callback)
 
     pos_pub = rospy.Publisher('ur3/position', position, queue_size=10)
     cmd_pub = rospy.Publisher('arm_controller/command', JointTrajectory, queue_size=10)
     gripper_input_pub = rospy.Publisher('ur3/gripper_input', gripper_input, queue_size=10)
     gripper_position_pub = rospy.Publisher('gripper/position', Point, queue_size=10)
-    cmd_vel_pub = rospy.Publisher('cart_controller/cmd_vel', Twist, queue_size=10)
-    odom_pub = rospy.Publisher('ur3/odom', Odometry, queue_size=10)
+    # cmd_vel_pub = rospy.Publisher('cart_controller/cmd_vel', Twist, queue_size=10)
+    # odom_pub = rospy.Publisher('ur3/odom', Odometry, queue_size=10)
 
     try:
         while not rospy.is_shutdown():

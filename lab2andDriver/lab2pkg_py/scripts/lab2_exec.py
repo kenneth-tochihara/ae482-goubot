@@ -42,7 +42,7 @@ SPIN_RATE = 40
 
 # UR3 home location
 home = np.radians([120, -90, 90, -90, -90, 0])
-zero_position = np.radians([180, 0, 0, -90, 0, 0])
+zero_position = np.radians([180, 0, 0, 0, 0, 0])
 
 cart_twist = Twist()
 cart_pose = Pose()
@@ -210,23 +210,22 @@ def move_arm(pub_cmd, loop_rate, dest, vel, accel):
 
     loop_rate.sleep()
 
-    while(at_goal == 1):
+    while(at_goal == 0):
 
-        if( abs(thetas[0]-driver_msg.destination[0]) < 0.0005 and \
-            abs(thetas[1]-driver_msg.destination[1]) < 0.0005 and \
-            abs(thetas[2]-driver_msg.destination[2]) < 0.0005 and \
-            abs(thetas[3]-driver_msg.destination[3]) < 0.0005 and \
-            abs(thetas[4]-driver_msg.destination[4]) < 0.0005 and \
-            abs(thetas[5]-driver_msg.destination[5]) < 0.0005 ):
+        if( abs(thetas[0]-driver_msg.destination[0]) < 0.005 and \
+            abs(thetas[1]-driver_msg.destination[1]) < 0.005 and \
+            abs(thetas[2]-driver_msg.destination[2]) < 0.005 and \
+            abs(thetas[3]-driver_msg.destination[3]) < 0.005 and \
+            abs(thetas[4]-driver_msg.destination[4]) < 0.005 and \
+            abs(thetas[5]-driver_msg.destination[5]) < 0.005 ):
 
             at_goal = 1
             rospy.loginfo("Goal is reached!")
-        print(abs(thetas[0]-driver_msg.destination[0]),
-            abs(thetas[1]-driver_msg.destination[1]),
-            abs(thetas[2]-driver_msg.destination[2]),
-            abs(thetas[3]-driver_msg.destination[3]),
-            abs(thetas[4]-driver_msg.destination[4]),
-            abs(thetas[5]-driver_msg.destination[5]))
+        
+        print("thetas = " + str(thetas))
+        print("driver_msg.destination = " + str(driver_msg.destination))
+        print("diff = "  + str(np.array(thetas) - np.array(driver_msg.destination)))
+        print("\n")
         loop_rate.sleep()
 
         if(spin_count >  SPIN_RATE*5):
@@ -302,16 +301,17 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
     global ur3_base_transform
 
     # calculate joint angles 
-    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT + 0.1, ur3_base_transform, 0)
+    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT + 0.05, ur3_base_transform, 0)
     Q_start = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT, ur3_base_transform, 0)
-    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT + 0.1, ur3_base_transform, 0)
+    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT + 0.05, ur3_base_transform, 0)
     Q_end = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT, ur3_base_transform, 0)
 
     # move arm to start location
+    # move_arm(pub_cmd, loop_rate, Q_start, vel, accel)
+    print(Q_start_default)
+    print(Q_start)
+    time.sleep(3.0)
     move_arm(pub_cmd, loop_rate, Q_start_default, vel, accel)
-    # print(Q_start_default - Q_start)
-    time.sleep(0.5)
-    move_arm(pub_cmd, loop_rate, Q_start, vel, accel)
     
     # turn on gripper
     rospy.loginfo("Gripper on")
@@ -406,16 +406,16 @@ def main():
     sub_input = rospy.Subscriber('ur3/gripper_input', gripper_input, gripper_callback)
     
     # Initialize publisher for cart_controller/cmd_vel
-    pub_twist = rospy.Publisher('ur3/cmd_vel', Twist, queue_size=10)
+    # pub_twist = rospy.Publisher('ur3/cmd_vel', Twist, queue_size=10)
     
     # Initialize subscribe to ur3/odom
-    sub_twist = rospy.Subscriber('ur3/odom', Odometry, odom_callback)
+    sub_twist = rospy.Subscriber('cart_controller/odom', Odometry, odom_callback)
 
     # Check if ROS is ready for operation
     while(rospy.is_shutdown()):
         print("ROS is shutdown!")
 
-    rospy.loginfo("Sending Goals ...")
+    # rospy.loginfo("Sending Goals ...")
 
     loop_rate = rospy.Rate(SPIN_RATE)
     
@@ -436,33 +436,29 @@ def main():
     # for _i in range(SPIN_RATE*5):
     #     loop_rate.sleep() 
     
-    move_block(pub_command, loop_rate, [0.3, 0.2], [0.35, 0.15], 4.0, 4.0)
+    # move_block(pub_command, loop_rate, [0.4, 0.2], [0.4, 0.1], 4.0, 4.0)
 
-    # # Stock arm movement
-    # Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    # Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    # Q13 = [135*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    # Q = [Q11, Q12, Q13]
+    # Stock arm movement
+    Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    Q13 = [135*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    Q = [Q11, Q12, Q13]
     
-    # loop_count = 2
-    # while(loop_count > 0):
-
-    #     move_arm(pub_command, loop_rate, home, 4.0, 4.0)
-
-    #     rospy.loginfo("Sending goal 1 ...")
-    #     move_arm(pub_command, loop_rate, Q[0], 4.0, 4.0)
-    #     time.sleep(1.0)
-
-    #     rospy.loginfo("Sending goal 2 ...")
-    #     move_arm(pub_command, loop_rate, Q[1], 4.0, 4.0)
-    #     time.sleep(1.0)
-
-    #     rospy.loginfo("Sending goal 3 ...")
-    #     move_arm(pub_command, loop_rate, Q[2], 4.0, 4.0)
-    #     time.sleep(1.0)
+    time.sleep(1.0)
+    move_arm(pub_command, loop_rate, home, 3.0, 3.0)
         
+    loop_count = 3
+    while(loop_count > 0):
 
-    #     loop_count = loop_count - 1
+        rospy.loginfo("Sending goal home ...")
+        print(loop_count)
+        time.sleep(1.0)
+        move_arm(pub_command, loop_rate, Q[3 - loop_count], 3.0, 3.0)
+
+        loop_count = loop_count - 1
+    
+    time.sleep(1.0)
+    move_arm(pub_command, loop_rate, home, 3.0, 3.0)
 
     # gripper(pub_command, loop_rate, suction_off)
     

@@ -21,7 +21,7 @@ def Get_MS():
 	R06 = np.array([[0,-1,0],
 					[0,0,-1],
 					[1,0,0]],dtype=float) 
-	p = np.vstack([-150, 150, 10])/1000.0; q1 = np.hstack(p)
+	p = np.vstack([0, 0, 0.05])/1000.0; q1 = np.hstack(p)
 	p = p + (np.vstack([0,120,152])/1000.0); q2 = np.hstack(p)
 	p = p + (np.vstack([244,0,0])/1000.0); q3 = np.hstack(p)
 	p = p + (np.vstack([213,-93,0])/1000.0); q4 = np.hstack(p) 
@@ -86,10 +86,10 @@ def ur3_base_T(cart_pose):
     T[2][1] = 2.0 * (qyz + qxw)
     T[2][2] = 1.0 - 2.0 * (qxx + qyy)
     
-    # convert to offset UR3 base
+    # convert to offset UR3 base and the world 
     T[0][3] = cart_pose.position.x
     T[1][3] = cart_pose.position.y
-    T[2][3] = cart_pose.position.z + 0.05
+    T[2][3] = cart_pose.position.z + 0.1
     
     return T
 
@@ -112,8 +112,8 @@ def lab_fk(theta1, theta2, theta3, theta4, theta5, theta6):
 	for i in range(6):
 		T = np.matmul(T,expm(S[i]*thetas[i])) 
 	T = np.matmul(T,M)
-	# print("T: ")
-	# print(T) 
+	print("T: ")
+	print(T) 
 
 	# ==============================================================#
 
@@ -144,7 +144,7 @@ def lab_invk(xWgrip, yWgrip, zWgrip, T_ur3, yaw_WgripDegree):
 	L10 = 59.0/1000.0
 
 	#Step 1
-	p0grip = np.array([xWgrip - T_ur3[3][0], yWgrip - T_ur3[3][1], zWgrip - T_ur3[3][2]])
+	p0grip = np.array([xWgrip - T_ur3[0][3], yWgrip - T_ur3[1][3], zWgrip - T_ur3[2][3]])
  	
 	#Step 2
 	pCen = np.array([0.0,0.0,0.0])

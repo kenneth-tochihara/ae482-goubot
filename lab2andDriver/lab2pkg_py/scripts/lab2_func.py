@@ -48,6 +48,50 @@ def Get_MS():
 	# ==============================================================#
 	return M, S
 
+"""
+Function that converts the pose of the cart to the transformation matrix for
+the base of the UR3
+"""
+def ur3_base_T(cart_pose):
+    
+    # initialize matrix
+    T = [[0.0, 0.0, 0.0, 0.0], \
+		 [0.0, 0.0, 0.0, 0.0], \
+		 [0.0, 0.0, 0.0, 0.0], \
+		 [0.0, 0.0, 0.0, 1.0]]
+    
+    # define quaternion values
+    qxx = cart_pose.orientation.x**2
+    qxy = cart_pose.orientation.x*cart_pose.orientation.y
+    qxz = cart_pose.orientation.x*cart_pose.orientation.z
+    qxw = cart_pose.orientation.x*cart_pose.orientation.w
+    
+    qyy = cart_pose.orientation.y**2
+    qyz = cart_pose.orientation.y*cart_pose.orientation.z
+    qyw = cart_pose.orientation.y*cart_pose.orientation.w
+    
+    qzz = cart_pose.orientation.z**2
+    qzw = cart_pose.orientation.z*cart_pose.orientation.w
+	
+    # convert to rotation matrix
+    T[0][0] = 1.0 - 2.0 * (qyy + qzz)
+    T[0][1] = 2.0 * (qxy - qzw)
+    T[0][2] = 2.0 * (qxz + qyw)
+    
+    T[1][0] = 2.0 * (qxy + qzw)
+    T[1][1] = 1.0 - 2.0 * (qxx + qzz)
+    T[1][2] = 2.0 * (qyz - qxw)
+    
+    T[2][0] = 2.0 * (qxz - qyw)
+    T[2][1] = 2.0 * (qyz + qxw)
+    T[2][2] = 1.0 - 2.0 * (qxx + qyy)
+    
+    # convert to offset UR3 base
+    T[0][3] = cart_pose.position.x
+    T[1][3] = cart_pose.position.y
+    T[2][3] = cart_pose.position.z + 0.05
+    
+    return T
 
 """
 Function that calculates encoder numbers for each motor
@@ -88,7 +132,7 @@ def lawcos(a,b,c):
 """
 Function that calculates an elbow up Inverse Kinematic solution for the UR3
 """
-def lab_invk(xWgrip, yWgrip, zWgrip, yaw_WgripDegree):
+def lab_invk(xWgrip, yWgrip, zWgrip, T_ur3, yaw_WgripDegree):
 	# =================== Your code starts here ====================#
 	r = 0.0535
 	L1 = (152.0)/1000.0
@@ -100,9 +144,8 @@ def lab_invk(xWgrip, yWgrip, zWgrip, yaw_WgripDegree):
 	L10 = 59.0/1000.0
 
 	#Step 1
-	pWgrip = np.array([xWgrip, yWgrip, zWgrip])
-	p0grip = pWgrip - (np.array([-150.0, 150.0, 10.0])/1000.0)
-	
+	p0grip = np.array([xWgrip - T_ur3[3][0], yWgrip - T_ur3[3][1], zWgrip - T_ur3[3][2]])
+ 	
 	#Step 2
 	pCen = np.array([0.0,0.0,0.0])
 	pCen[0] = p0grip[0] - r * np.cos(np.radians(yaw_WgripDegree))

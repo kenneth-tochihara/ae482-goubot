@@ -5,6 +5,8 @@ from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist, Pose
 from nav_msgs.msg import Odometry
 PI = 3.1415926535897932384626433
+BLOCK_HEIGHT = 0.0318
+CART_HEIGHT = 0.15
 
 """
 command msg

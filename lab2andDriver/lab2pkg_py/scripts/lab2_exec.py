@@ -21,7 +21,7 @@ from lab2_header import *
 from lab2_func import *
 from blob_search import *
 from rospy.client import spin
-from kinematics import *
+# from kinematics import *
 from cv_bridge import CvBridge
 
 # Position for UR3 not blocking the camera
@@ -102,13 +102,14 @@ def gripper_callback(msg):
 """
 Whenever cart_controller/odom publishes info this callback function is called.
 """
-# TODO: Kenneth
 def odom_callback(msg):
 
     global cart_twist
     global cart_pose
     global current_odom
     global current_odom_set
+    global ur3_base_transform
+    
 
     # twist copy
     cart_twist.linear.x = msg.twist.twist.linear.x
@@ -143,7 +144,8 @@ def odom_callback(msg):
     current_odom.pose.pose.orientation.y = cart_pose.orientation.y
     current_odom.pose.pose.orientation.z = cart_pose.orientation.z
     current_odom.pose.pose.orientation.w = cart_pose.orientation.w
-
+    
+    ur3_base_transform = ur3_base_T(cart_pose)
     current_odom_set = True
 
 def gripper(pub_cmd, loop_rate, io_0):
@@ -297,17 +299,18 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
     # ========================= Student's code starts here =========================
 
     global digital_in_0
+    global ur3_base_transform
 
     # calculate joint angles 
-    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], 0.1, 0)
-    Q_start = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], 0.03, 0)
-    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], 0.1, 0)
-    Q_end = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], 0.03, 0)
+    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT + 0.1, ur3_base_transform, 0)
+    Q_start = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT, ur3_base_transform, 0)
+    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT + 0.1, ur3_base_transform, 0)
+    Q_end = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT, ur3_base_transform, 0)
 
     # move arm to start location
-    print("move to default")
     move_arm(pub_cmd, loop_rate, Q_start_default, vel, accel)
-    print("move to default")
+    # print(Q_start_default - Q_start)
+    time.sleep(0.5)
     move_arm(pub_cmd, loop_rate, Q_start, vel, accel)
     
     # turn on gripper
@@ -425,7 +428,7 @@ def main():
     
     # while True:
     #     pub_twist.publish(dest_twist)
-    start_time = time.time()
+    time.sleep(2)
     # while abs(start_time - time.time()) < 10:
     #     # print(start_time - time.time())
     # move_cart(pub_twist, loop_rate, dest_twist)
@@ -433,64 +436,64 @@ def main():
     # for _i in range(SPIN_RATE*5):
     #     loop_rate.sleep() 
     
-    # move_block(pub_command, loop_rate, [0.30582680585318511, -0.16385970163279578, -0.1], [0.19886217857288158, -0.10150232111239771, -0.1], 4.0, 4.0)
+    move_block(pub_command, loop_rate, [0.3, 0.2], [0.35, 0.15], 4.0, 4.0)
 
-    # Stock arm movement
-    Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    Q13 = [135*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    Q = [Q11, Q12, Q13]
+    # # Stock arm movement
+    # Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    # Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    # Q13 = [135*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    # Q = [Q11, Q12, Q13]
     
-    loop_count = 2
-    while(loop_count > 0):
+    # loop_count = 2
+    # while(loop_count > 0):
 
-        move_arm(pub_command, loop_rate, home, 4.0, 4.0)
+    #     move_arm(pub_command, loop_rate, home, 4.0, 4.0)
 
-        rospy.loginfo("Sending goal 1 ...")
-        move_arm(pub_command, loop_rate, Q[0], 4.0, 4.0)
-        time.sleep(1.0)
+    #     rospy.loginfo("Sending goal 1 ...")
+    #     move_arm(pub_command, loop_rate, Q[0], 4.0, 4.0)
+    #     time.sleep(1.0)
 
-        rospy.loginfo("Sending goal 2 ...")
-        move_arm(pub_command, loop_rate, Q[1], 4.0, 4.0)
-        time.sleep(1.0)
+    #     rospy.loginfo("Sending goal 2 ...")
+    #     move_arm(pub_command, loop_rate, Q[1], 4.0, 4.0)
+    #     time.sleep(1.0)
 
-        rospy.loginfo("Sending goal 3 ...")
-        move_arm(pub_command, loop_rate, Q[2], 4.0, 4.0)
-        time.sleep(1.0)
+    #     rospy.loginfo("Sending goal 3 ...")
+    #     move_arm(pub_command, loop_rate, Q[2], 4.0, 4.0)
+    #     time.sleep(1.0)
         
 
-        loop_count = loop_count - 1
+    #     loop_count = loop_count - 1
 
     # gripper(pub_command, loop_rate, suction_off)
     
-    # pick up block
-    print("done")
+    # # pick up block
+    # print("done")
 
-    x_des = 0.285
-    y_des = 0.2
-    z_des = 0.
-    yaw_des = 0.
+    # x_des = 0.285
+    # y_des = 0.2
+    # z_des = 0.
+    # yaw_des = 0.
 
-    move_arm(pub_command, loop_rate, zero_position, 4.0, 4.0)
+    # move_arm(pub_command, loop_rate, zero_position, 4.0, 4.0)
 
-    time.sleep(1)
+    # time.sleep(1)
 
-    thetas = lab_invk(x_des, y_des, z_des, yaw_des)
-    move_arm(pub_command, loop_rate, thetas, 4.0, 4.0)
+    # thetas = lab_invk(x_des, y_des, z_des, yaw_des)
+    # move_arm(pub_command, loop_rate, thetas, 4.0, 4.0)
     
-    z_des = -0.11
-    thetas = lab_invk(x_des, y_des, z_des, yaw_des)
-    move_arm(pub_command, loop_rate, thetas, 4.0, 4.0) 
+    # z_des = -0.11
+    # thetas = lab_invk(x_des, y_des, z_des, yaw_des)
+    # move_arm(pub_command, loop_rate, thetas, 4.0, 4.0) 
 
-    time.sleep(5)
+    # time.sleep(5)
 
-    z_des = 0.1
-    thetas = lab_invk(x_des, y_des, z_des, yaw_des)
-    move_arm(pub_command, loop_rate, thetas, 4.0, 4.0) 
+    # z_des = 0.1
+    # thetas = lab_invk(x_des, y_des, z_des, yaw_des)
+    # move_arm(pub_command, loop_rate, thetas, 4.0, 4.0) 
 
-    time.sleep(1)
+    # time.sleep(1)
 
-    move_arm(pub_command, loop_rate, zero_position, 4.0, 4.0)
+    # move_arm(pub_command, loop_rate, zero_position, 4.0, 4.0)
 
 
 if __name__ == '__main__':

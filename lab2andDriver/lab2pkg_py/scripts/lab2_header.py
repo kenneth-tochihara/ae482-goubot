@@ -1,7 +1,10 @@
 from ur3_driver.msg import command
 from ur3_driver.msg import position
 from ur3_driver.msg import gripper_input
-from geometry_msgs.msg import Twist
+from sensor_msgs.msg import Image
+from geometry_msgs.msg import Twist, Pose
+from nav_msgs.msg import Odometry
+PI = 3.1415926535897932384626433
 
 """
 command msg
@@ -27,7 +30,14 @@ float64 AIN1
 
 Twist msg
 ------------------------
-linear
-angular
+geometry_msgs/Vector3 linear
+  float64 x
+  float64 y
+  float64 z
+geometry_msgs/Vector3 angular
+  float64 x
+  float64 y
+  float64 z
+
 
 """

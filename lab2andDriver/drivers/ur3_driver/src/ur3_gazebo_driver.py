@@ -74,7 +74,7 @@ def gazebo_pos_sub_callback(data):
     gazebo_pos = list(data.position)
     gazebo_pos = [gazebo_pos[2] + math.pi, gazebo_pos[1], gazebo_pos[0],
                   gazebo_pos[3], gazebo_pos[4], gazebo_pos[5]]
-    pos_msg = position()
+    pos_msg = position()    
     pos_msg.position = gazebo_pos
     pos_msg.isReady = True
     pos_pub.publish(pos_msg)

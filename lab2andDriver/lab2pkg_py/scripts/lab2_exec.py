@@ -30,6 +30,7 @@ go_away = [270*PI/180.0, -90*PI/180.0, 90*PI/180.0, -90*PI/180.0, -90*PI/180.0, 
 # Store world coordinates of green and light blue blocks
 xw_yw_G = []
 xw_yw_B = []
+sw_yw_W = []
 
 # goals for the blocks
 goal_B = [[0.20582680585318511, -0.16385970163279578, 0.], 
@@ -296,9 +297,9 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
     ur3_base_transform = ur3_base_T(cart_pose)
 
     # calculate joint angles 
-    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT + 0.05, ur3_base_transform, 0)
+    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT + 0.2, ur3_base_transform, 0)
     Q_start = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT, ur3_base_transform, 0)
-    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT + 0.05, ur3_base_transform, 0)
+    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT + 0.2, ur3_base_transform, 0)
     Q_end = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT, ur3_base_transform, 0)
 
     # move arm to start location
@@ -357,6 +358,7 @@ class ImageConverter:
 
         global xw_yw_G # store found green blocks in this list
         global xw_yw_B # store found light blue blocks in this list
+        global xw_yw_W # store found white blocks in this list
 
         try:
           # Convert ROS image to OpenCV image
@@ -379,6 +381,8 @@ class ImageConverter:
 
         xw_yw_G = blob_search(cv_image, "green")
         xw_yw_B = blob_search(cv_image, "lblue")
+        xw_yw_W = blob_search(cv_image, "white")
+        print(xw_yw_W)
         # blob_search(cv_image, "orange")
 
 
@@ -413,14 +417,15 @@ def main():
     # rospy.loginfo("Sending Goals ...")
 
     loop_rate = rospy.Rate(SPIN_RATE)
+
+    move_arm(pub_command, loop_rate, go_away, 3.0, 3.0)
     
-    # ic = ImageConverter(SPIN_RATE)
+    ic = ImageConverter(SPIN_RATE)
 
     dest_twist = Twist()
     dest_twist.linear.x = 0.5
     # dest_twist.angular.z = 0.1
-    
-    
+
     # while True:
     #     pub_twist.publish(dest_twist)
     time.sleep(2)
@@ -431,7 +436,7 @@ def main():
     # for _i in range(SPIN_RATE*5):
     #     loop_rate.sleep() 
     
-    move_block(pub_command, loop_rate, [0.4, 0.0], [0.5, 0.0], 3.0, 3.0)
+    move_block(pub_command, loop_rate, [xw_yw_W[0][1], xw_yw_W[0][0]], xw_yw_W[0], 3.0, 3.0)
 
     # Stock arm movement
     Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]

@@ -12,17 +12,17 @@
       <rightJoint>right_wheel_hinge</rightJoint>
       <wheelSeparation>0.4</wheelSeparation>
       <wheelDiameter>0.1</wheelDiameter>
-      <torque>20</torque>
+      <torque>100</torque>
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
       <robotBaseFrame>chassis</robotBaseFrame>
-      <publishWheelTF>false</publishWheelTF>
-      <publishOdom>false</publishOdom>
+      <publishWheelTF>true</publishWheelTF>
+      <publishOdom>true</publishOdom>
       <publishOdomTF>true</publishOdomTF>
-      <publishWheelJointState>false</publishWheelJointState>
-      <wheelAcceleration>0</wheelAcceleration>
-      <wheelTorque>5</wheelTorque>
+      <publishWheelJointState>true</publishWheelJointState>
+      <wheelAcceleration>2.0</wheelAcceleration>
+      <wheelTorque>100</wheelTorque>
       <odometrySource>world</odometrySource>
       <publishTf>1</publishTf>
       <rosDebugLevel>na</rosDebugLevel>

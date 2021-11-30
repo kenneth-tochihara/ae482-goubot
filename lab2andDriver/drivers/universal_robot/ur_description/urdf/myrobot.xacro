@@ -13,7 +13,7 @@
       <pose>0 0 0.1 0 0 0</pose>
 
       <inertial>
-        <mass value="10.0"/>
+        <mass value="20.0"/>
         <origin xyz="0.0 0 0.1" rpy=" 0 0 0"/>
         <inertia
             ixx="0.5" ixy="0" ixz="0"
@@ -110,7 +110,7 @@
       <child link="left_wheel"/>
       <parent link="chassis"/>
       <axis xyz="0 1 0" rpy="0 0 0"/>
-      <!-- <limit velocity="100"/> -->
+      <limit effort="10000" velocity="10000"/>
       <joint_properties damping="0.0" friction="0.0"/>
     </joint>
 
@@ -119,7 +119,7 @@
       <child link="right_wheel"/>
       <parent link="chassis"/>
       <axis xyz="0 1 0" rpy="0 0 0"/>
-      <!-- <limit velocity="100"/> -->
+      <limit effort="10000" velocity="10000"/>
       <joint_properties damping="0.0" friction="0.0"/>
     </joint>
 
@@ -130,7 +130,7 @@
         </joint>
         <actuator name="leftMotor">
           <hardwareInterface>VelocityJointInterface</hardwareInterface>
-          <mechanicalReduction>10</mechanicalReduction>
+          <mechanicalReduction>1</mechanicalReduction>
         </actuator>
       </transmission>
 
@@ -141,7 +141,7 @@
         </joint>
         <actuator name="rightMotor">
           <hardwareInterface>VelocityJointInterface</hardwareInterface>
-          <mechanicalReduction>10</mechanicalReduction>
+          <mechanicalReduction>1</mechanicalReduction>
         </actuator>
       </transmission>
 
@@ -167,7 +167,7 @@
         <publishOdom>true</publishOdom>
         <publishOdomTF>true</publishOdomTF>
         <publishWheelJointState>true</publishWheelJointState>
-        <wheelAcceleration>1.0</wheelAcceleration>
+        <wheelAcceleration>0.5</wheelAcceleration>
         <wheelTorque>40</wheelTorque>
         <odometrySource>world</odometrySource>
         <publishTf>1</publishTf>
@@ -184,23 +184,15 @@
 
     <gazebo reference="left_wheel">
       <selfCollide>true</selfCollide>
-      <mu1 value="1.0"/>
-      <mu2 value="1.0"/>
-      <kp  value="10000000.0" />
-      <kd  value="1.0" />
-      <fdir1 value="1 0 0"/>
-      <minDepth>0.02</minDepth>
+      <mu1 value="20000.0"/>
+      <mu2 value="1000.0"/>
       <material>Gazebo/Black</material>
     </gazebo>
 
     <gazebo reference="right_wheel">
       <selfCollide>true</selfCollide>
-      <mu1 value="1.0"/>
-      <mu2 value="1.0"/>
-      <kp  value="10000000.0" />
-      <kd  value="1.0" />
-      <fdir1 value="1 0 0"/>
-      <minDepth>0.02</minDepth>
+      <mu1 value="20000.0"/>
+      <mu2 value="1000.0"/>
       <material>Gazebo/Black</material>
     </gazebo>
   </xacro:macro>

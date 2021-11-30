@@ -108,9 +108,7 @@ def odom_callback(msg):
     global cart_pose
     global current_odom
     global current_odom_set
-    global ur3_base_transform
     
-
     # twist copy
     cart_twist.linear.x = msg.twist.twist.linear.x
     cart_twist.linear.y = msg.twist.twist.linear.y
@@ -401,7 +399,7 @@ def main():
     sub_input = rospy.Subscriber('ur3/gripper_input', gripper_input, gripper_callback)
     
     # Initialize publisher for cart_controller/cmd_vel
-    # pub_twist = rospy.Publisher('ur3/cmd_vel', Twist, queue_size=10)
+    pub_twist = rospy.Publisher('cart_controller/cmd_vel', Twist, queue_size=10)
     
     # Initialize subscribe to ur3/odom
     sub_twist = rospy.Subscriber('cart_controller/odom', Odometry, odom_callback)
@@ -421,15 +419,9 @@ def main():
     # dest_twist.angular.z = 0.1
     
     
-    # while True:
-    #     pub_twist.publish(dest_twist)
-    time.sleep(2)
-    # while abs(start_time - time.time()) < 10:
-    #     # print(start_time - time.time())
+    # # TESTING CART MOVEMENT
+    # time.sleep(2)
     # move_cart(pub_twist, loop_rate, dest_twist)
-    
-    # for _i in range(SPIN_RATE*5):
-    #     loop_rate.sleep() 
     
     move_block(pub_command, loop_rate, [0.4, 0.0], [0.5, 0.0], 3.0, 3.0)
 

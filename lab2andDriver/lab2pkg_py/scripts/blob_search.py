@@ -11,10 +11,10 @@ from math import atan2
 # beta = 754.12171154586292
 # tx = -0.052737794912171128
 # ty = -0.34366522285472678
-theta = 0.
-beta = 754.12171154586292
-tx = -0.105
-ty = -0.29
+theta = 0.0
+beta = 342.5
+tx = 0.0
+ty = 0.0
 
 # arrays for calibration
 beta_list = []
@@ -25,14 +25,9 @@ ty_list = []
 # Function that converts image coord to world coord
 # Note: input x corresponds to columns in the image, input y is rows in the image
 def IMG2W(x,y):
-    R = np.array([[np.cos(theta),-np.sin(theta),0],
-                        [np.sin(theta),np.cos(theta),0],
-                        [0,0,1]])
-
-    xw = (x - 240)/beta
-    yw = (y - 320)/beta
-    pw = np.matmul(R, np.vstack((xw,yw,0))) - np.vstack((tx,ty,0))
-    return (pw[1][0],pw[0][0])
+    xw = (x - 320)/beta
+    yw = (y - 240)/beta
+    return (yw,xw)
     
 
 def calibration_frame(blob_image_center):
@@ -122,8 +117,8 @@ def blob_search(image_raw, color='orange'):
     params.filterByArea = True
 
     # block
-    params.minArea = 0.1
-    params.maxArea = 1000
+    params.minArea = 55
+    params.maxArea = 150
 
     # params.minArea = 625 - 150
     # params.maxArea = 625 + 150

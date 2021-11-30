@@ -379,8 +379,6 @@ class ImageConverter:
         # do coordinate transformation in the blob_search() function, namely, from
         # the image frame to the global world frame.
 
-        xw_yw_G = blob_search(cv_image, "green")
-        xw_yw_B = blob_search(cv_image, "lblue")
         xw_yw_W = blob_search(cv_image, "white")
         print(xw_yw_W)
         # blob_search(cv_image, "orange")
@@ -424,6 +422,7 @@ def main():
 
     dest_twist = Twist()
     dest_twist.linear.x = 0.5
+
     # dest_twist.angular.z = 0.1
 
     # while True:
@@ -436,7 +435,7 @@ def main():
     # for _i in range(SPIN_RATE*5):
     #     loop_rate.sleep() 
     
-    move_block(pub_command, loop_rate, [xw_yw_W[0][1], xw_yw_W[0][0]], xw_yw_W[0], 3.0, 3.0)
+    move_block(pub_command, loop_rate, xw_yw_W[0], xw_yw_W[0], 3.0, 3.0)
 
     # Stock arm movement
     Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]

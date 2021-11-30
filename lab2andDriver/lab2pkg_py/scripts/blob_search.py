@@ -7,10 +7,14 @@ from math import atan2
 # ========================= Student's code starts here =========================
 
 # Params for camera calibration
-theta = 0.01637035800040541
+# theta = 0.01637035800040541
+# beta = 754.12171154586292
+# tx = -0.052737794912171128
+# ty = -0.34366522285472678
+theta = 0.
 beta = 754.12171154586292
-tx = -0.052737794912171128
-ty = -0.34366522285472678
+tx = -0.105
+ty = -0.29
 
 # arrays for calibration
 beta_list = []
@@ -118,8 +122,11 @@ def blob_search(image_raw, color='orange'):
     params.filterByArea = True
 
     # block
-    params.minArea = 625 - 150
-    params.maxArea = 625 + 150
+    params.minArea = 0.1
+    params.maxArea = 1000
+
+    # params.minArea = 625 - 150
+    # params.maxArea = 625 + 150
 
     # orange blob
     # params.minArea = np.pi*(7.5**2)
@@ -166,6 +173,9 @@ def blob_search(image_raw, color='orange'):
     elif color == 'orange':
         lower = (1,50,50)
         upper = (21,255,255)
+    elif color == 'white':
+        lower = (0,0,240)
+        upper = (255,15,255)
 
     # lower = (110,50,50)     # blue lower
     # upper = (130,255,255)   # blue upper
@@ -201,8 +211,9 @@ def blob_search(image_raw, color='orange'):
 
     cv2.namedWindow("Camera View")
     cv2.imshow("Camera View", image_raw)
-    cv2.namedWindow("Mask View")
-    cv2.imshow("Mask View", mask_image)
+    if color == "white":
+        cv2.namedWindow("Mask View")
+        cv2.imshow("Mask View", mask_image)
     cv2.namedWindow("Keypoint View")
     cv2.imshow("Keypoint View", im_with_keypoints)
 

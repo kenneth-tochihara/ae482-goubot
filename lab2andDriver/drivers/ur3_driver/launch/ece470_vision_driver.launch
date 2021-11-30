@@ -6,7 +6,7 @@
     <param name="image_width" value = "640"/>
     <param name="image_height" value = "480"/>
     <!--param name="file" value="" /-->
-    <!--param name="camera_info_url" value="file://$(find ece470_ur3_driver)/launch/ece470_vision_driver.yaml"/-->
+    <param name="camera_info_url" value="file://$(find ece470_ur3_driver)/launch/ece470_vision_driver.yaml">
  	<!-- FOR MORE INFO ON CAMERA CALIBRATION google: Camera calibration with OpenCV/-->
     <param name="rate" value="30"/>
   </node>

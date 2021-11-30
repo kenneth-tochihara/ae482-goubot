@@ -109,9 +109,7 @@ def odom_callback(msg):
     global cart_pose
     global current_odom
     global current_odom_set
-    global ur3_base_transform
     
-
     # twist copy
     cart_twist.linear.x = msg.twist.twist.linear.x
     cart_twist.linear.y = msg.twist.twist.linear.y
@@ -403,7 +401,7 @@ def main():
     sub_input = rospy.Subscriber('ur3/gripper_input', gripper_input, gripper_callback)
     
     # Initialize publisher for cart_controller/cmd_vel
-    # pub_twist = rospy.Publisher('ur3/cmd_vel', Twist, queue_size=10)
+    pub_twist = rospy.Publisher('cart_controller/cmd_vel', Twist, queue_size=10)
     
     # Initialize subscribe to ur3/odom
     sub_twist = rospy.Subscriber('cart_controller/odom', Odometry, odom_callback)
@@ -412,83 +410,45 @@ def main():
     while(rospy.is_shutdown()):
         print("ROS is shutdown!")
 
-    # rospy.loginfo("Sending Goals ...")
+    rospy.loginfo("Sending Goals ...")
 
     loop_rate = rospy.Rate(SPIN_RATE)
 
     move_arm(pub_command, loop_rate, go_away, 3.0, 3.0)
+     
+    # # TESTING ARM MOVEMENT
+    # Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    # Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    # Q13 = [135*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
+    # Q = [Q11, Q12, Q13]
     
-    ic = ImageConverter(SPIN_RATE)
-
-    dest_twist = Twist()
-    dest_twist.linear.x = 0.5
-
-    # dest_twist.angular.z = 0.1
-
-    # while True:
-    #     pub_twist.publish(dest_twist)
-    time.sleep(2)
-    # while abs(start_time - time.time()) < 10:
-    #     # print(start_time - time.time())
-    # move_cart(pub_twist, loop_rate, dest_twist)
-    
-    # for _i in range(SPIN_RATE*5):
-    #     loop_rate.sleep() 
-    
-    move_block(pub_command, loop_rate, xw_yw_W[0], xw_yw_W[0], 3.0, 3.0)
-
-    # Stock arm movement
-    Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    Q13 = [135*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    Q = [Q11, Q12, Q13]
-    
-    time.sleep(1.0)
-    move_arm(pub_command, loop_rate, home, 3.0, 3.0)
+    # time.sleep(1.0)
+    # move_arm(pub_command, loop_rate, home, 3.0, 3.0)
         
     # loop_count = 3
     # while(loop_count > 0):
 
-    #     rospy.loginfo("Sending goal home ...")
-    #     print(loop_count)
+    #     rospy.loginfo("Sending goal ...")
     #     time.sleep(1.0)
     #     move_arm(pub_command, loop_rate, Q[3 - loop_count], 3.0, 3.0)
 
     #     loop_count = loop_count - 1
     
-    # time.sleep(1.0)
-    # move_arm(pub_command, loop_rate, home, 3.0, 3.0)
-
-    # gripper(pub_command, loop_rate, suction_off)
+    # # TESTING CART MOVEMENT
+    # dest_twist = Twist()
+    # dest_twist.linear.x = 0.5
+    # time.sleep(2)
+    # move_cart(pub_twist, loop_rate, dest_twist)
     
-    # # pick up block
-    # print("done")
+    # #  TESTING BLOCK MOVEMENT
+    # time.sleep(2)
+    # move_block(pub_command, loop_rate, [0.4, 0.0], [0.5, 0.0], 3.0, 3.0)
 
-    # x_des = 0.285
-    # y_des = 0.2
-    # z_des = 0.
-    # yaw_des = 0.
+    # # TESTING BLOCK MOVEMENT WITH COMPUTER VISION
+    # time.sleep(2)
+    # ic = ImageConverter(SPIN_RATE)
+    # move_block(pub_command, loop_rate, [xw_yw_W[0][1], xw_yw_W[0][0]], xw_yw_W[0], 3.0, 3.0)
 
-    # move_arm(pub_command, loop_rate, zero_position, 4.0, 4.0)
-
-    # time.sleep(1)
-
-    # thetas = lab_invk(x_des, y_des, z_des, yaw_des)
-    # move_arm(pub_command, loop_rate, thetas, 4.0, 4.0)
-    
-    # z_des = -0.11
-    # thetas = lab_invk(x_des, y_des, z_des, yaw_des)
-    # move_arm(pub_command, loop_rate, thetas, 4.0, 4.0) 
-
-    # time.sleep(5)
-
-    # z_des = 0.1
-    # thetas = lab_invk(x_des, y_des, z_des, yaw_des)
-    # move_arm(pub_command, loop_rate, thetas, 4.0, 4.0) 
-
-    # time.sleep(1)
-
-    # move_arm(pub_command, loop_rate, zero_position, 4.0, 4.0)
 
 
 if __name__ == '__main__':

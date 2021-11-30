@@ -145,7 +145,6 @@ def odom_callback(msg):
     current_odom.pose.pose.orientation.z = cart_pose.orientation.z
     current_odom.pose.pose.orientation.w = cart_pose.orientation.w
     
-    ur3_base_transform = ur3_base_T(cart_pose)
     current_odom_set = True
 
 def gripper(pub_cmd, loop_rate, io_0):
@@ -212,20 +211,16 @@ def move_arm(pub_cmd, loop_rate, dest, vel, accel):
 
     while(at_goal == 0):
 
-        if( abs(thetas[0]-driver_msg.destination[0]) < 0.005 and \
-            abs(thetas[1]-driver_msg.destination[1]) < 0.005 and \
-            abs(thetas[2]-driver_msg.destination[2]) < 0.005 and \
-            abs(thetas[3]-driver_msg.destination[3]) < 0.005 and \
-            abs(thetas[4]-driver_msg.destination[4]) < 0.005 and \
-            abs(thetas[5]-driver_msg.destination[5]) < 0.005 ):
+        if( abs(thetas[0]-driver_msg.destination[0]) < 0.001 and \
+            abs(thetas[1]-driver_msg.destination[1]) < 0.001 and \
+            abs(thetas[2]-driver_msg.destination[2]) < 0.001 and \
+            abs(thetas[3]-driver_msg.destination[3]) < 0.001 and \
+            abs(thetas[4]-driver_msg.destination[4]) < 0.001 and \
+            abs(thetas[5]-driver_msg.destination[5]) < 0.001 ):
 
             at_goal = 1
             rospy.loginfo("Goal is reached!")
-        
-        print("thetas = " + str(thetas))
-        print("driver_msg.destination = " + str(driver_msg.destination))
-        print("diff = "  + str(np.array(thetas) - np.array(driver_msg.destination)))
-        print("\n")
+
         loop_rate.sleep()
 
         if(spin_count >  SPIN_RATE*5):
@@ -298,20 +293,20 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
     # ========================= Student's code starts here =========================
 
     global digital_in_0
-    global ur3_base_transform
+    ur3_base_transform = ur3_base_T(cart_pose)
 
     # calculate joint angles 
-    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT + 0.05, ur3_base_transform, 0)
-    Q_start = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT, ur3_base_transform, 0)
-    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT + 0.05, ur3_base_transform, 0)
-    Q_end = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT-CART_HEIGHT, ur3_base_transform, 0)
+    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT + 0.05, ur3_base_transform, 0)
+    Q_start = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT, ur3_base_transform, 0)
+    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT + 0.05, ur3_base_transform, 0)
+    Q_end = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT, ur3_base_transform, 0)
 
     # move arm to start location
-    # move_arm(pub_cmd, loop_rate, Q_start, vel, accel)
-    print(Q_start_default)
-    print(Q_start)
-    time.sleep(3.0)
+    rospy.loginfo("Start location default")
     move_arm(pub_cmd, loop_rate, Q_start_default, vel, accel)
+    time.sleep(3.0)
+    rospy.loginfo("Start location block")
+    move_arm(pub_cmd, loop_rate, Q_start, vel, accel)
     
     # turn on gripper
     rospy.loginfo("Gripper on")
@@ -436,7 +431,7 @@ def main():
     # for _i in range(SPIN_RATE*5):
     #     loop_rate.sleep() 
     
-    # move_block(pub_command, loop_rate, [0.4, 0.2], [0.4, 0.1], 4.0, 4.0)
+    move_block(pub_command, loop_rate, [0.4, 0.0], [0.5, 0.0], 3.0, 3.0)
 
     # Stock arm movement
     Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
@@ -447,18 +442,18 @@ def main():
     time.sleep(1.0)
     move_arm(pub_command, loop_rate, home, 3.0, 3.0)
         
-    loop_count = 3
-    while(loop_count > 0):
+    # loop_count = 3
+    # while(loop_count > 0):
 
-        rospy.loginfo("Sending goal home ...")
-        print(loop_count)
-        time.sleep(1.0)
-        move_arm(pub_command, loop_rate, Q[3 - loop_count], 3.0, 3.0)
+    #     rospy.loginfo("Sending goal home ...")
+    #     print(loop_count)
+    #     time.sleep(1.0)
+    #     move_arm(pub_command, loop_rate, Q[3 - loop_count], 3.0, 3.0)
 
-        loop_count = loop_count - 1
+    #     loop_count = loop_count - 1
     
-    time.sleep(1.0)
-    move_arm(pub_command, loop_rate, home, 3.0, 3.0)
+    # time.sleep(1.0)
+    # move_arm(pub_command, loop_rate, home, 3.0, 3.0)
 
     # gripper(pub_command, loop_rate, suction_off)
     

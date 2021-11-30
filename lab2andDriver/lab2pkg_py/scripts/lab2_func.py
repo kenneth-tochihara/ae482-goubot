@@ -21,7 +21,7 @@ def Get_MS():
 	R06 = np.array([[0,-1,0],
 					[0,0,-1],
 					[1,0,0]],dtype=float) 
-	p = np.vstack([0, 0, 0.05])/1000.0; q1 = np.hstack(p)
+	p = np.vstack([0, 0, 10])/1000.0; q1 = np.hstack(p)
 	p = p + (np.vstack([0,120,152])/1000.0); q2 = np.hstack(p)
 	p = p + (np.vstack([244,0,0])/1000.0); q3 = np.hstack(p)
 	p = p + (np.vstack([213,-93,0])/1000.0); q4 = np.hstack(p) 
@@ -55,10 +55,16 @@ the base of the UR3
 def ur3_base_T(cart_pose):
     
     # initialize matrix
-    T = [[0.0, 0.0, 0.0, 0.0], \
-		 [0.0, 0.0, 0.0, 0.0], \
-		 [0.0, 0.0, 0.0, 0.0], \
+    T = [[1.0, 0.0, 0.0, 0.0], \
+		 [0.0, 1.0, 0.0, 0.0], \
+		 [0.0, 0.0, 1.0, 0.0], \
 		 [0.0, 0.0, 0.0, 1.0]]
+    
+    R_t = [[1.0, 0.0, 0.0], \
+	 	   [0.0, 1.0, 0.0], \
+	 	   [0.0, 0.0, 1.0]]
+    
+    p = [[0.0], [0.0], [0.0]]
     
     # define quaternion values
     qxx = cart_pose.orientation.x**2
@@ -74,23 +80,32 @@ def ur3_base_T(cart_pose):
     qzw = cart_pose.orientation.z*cart_pose.orientation.w
 	
     # convert to rotation matrix
-    T[0][0] = 1.0 - 2.0 * (qyy + qzz)
-    T[0][1] = 2.0 * (qxy - qzw)
-    T[0][2] = 2.0 * (qxz + qyw)
+    T[0][0] = 1.0 - 2.0 * (qyy + qzz); R_t[0][0] = T[0][0]
+    T[0][1] = 2.0 * (qxy - qzw); R_t[1][0] = T[0][1]
+    T[0][2] = 2.0 * (qxz + qyw); R_t[2][0] = T[0][2]
     
-    T[1][0] = 2.0 * (qxy + qzw)
-    T[1][1] = 1.0 - 2.0 * (qxx + qzz)
-    T[1][2] = 2.0 * (qyz - qxw)
+    T[1][0] = 2.0 * (qxy + qzw); R_t[0][1] = T[1][0]
+    T[1][1] = 1.0 - 2.0 * (qxx + qzz); R_t[1][1] = T[1][1]
+    T[1][2] = 2.0 * (qyz - qxw); R_t[2][1] = T[1][2]
     
-    T[2][0] = 2.0 * (qxz - qyw)
-    T[2][1] = 2.0 * (qyz + qxw)
-    T[2][2] = 1.0 - 2.0 * (qxx + qyy)
+    T[2][0] = 2.0 * (qxz - qyw); R_t[0][2] = T[2][0]
+    T[2][1] = 2.0 * (qyz + qxw); R_t[1][2] = T[2][1]
+    T[2][2] = 1.0 - 2.0 * (qxx + qyy); R_t[2][2] = T[2][2]
     
     # convert to offset UR3 base and the world 
-    T[0][3] = cart_pose.position.x
-    T[1][3] = cart_pose.position.y
-    T[2][3] = cart_pose.position.z + 0.1
+    T[0][3] = cart_pose.position.x; p[0][0] = T[0][3]
+    T[1][3] = cart_pose.position.y; p[1][0] = T[1][3]
+    T[2][3] = cart_pose.position.z + 0.15; p[2][0] = T[2][3]
     
+    # invert the frame
+    for i in range(3):
+        for j in range(3):
+            T[i][j] = R_t[i][j]
+    
+    R_t_p = np.matmul(R_t, p)
+    for i in range(3):
+        T[i][3] = -R_t_p[i][0]
+
     return T
 
 """
@@ -132,7 +147,7 @@ def lawcos(a,b,c):
 """
 Function that calculates an elbow up Inverse Kinematic solution for the UR3
 """
-def lab_invk(xWgrip, yWgrip, zWgrip, T_ur3, yaw_WgripDegree):
+def lab_invk(xWgrip, yWgrip, zWgrip, T_w_ur3, yaw_WgripDegree):
 	# =================== Your code starts here ====================#
 	r = 0.0535
 	L1 = (152.0)/1000.0
@@ -144,7 +159,9 @@ def lab_invk(xWgrip, yWgrip, zWgrip, T_ur3, yaw_WgripDegree):
 	L10 = 59.0/1000.0
 
 	#Step 1
-	p0grip = np.array([xWgrip - T_ur3[0][3], yWgrip - T_ur3[1][3], zWgrip - T_ur3[2][3]])
+	pWgrip = np.array([xWgrip, yWgrip, zWgrip, 1])
+	p0grip = np.matmul(T_w_ur3, np.vstack(pWgrip))
+	print(p0grip)
  	
 	#Step 2
 	pCen = np.array([0.0,0.0,0.0])

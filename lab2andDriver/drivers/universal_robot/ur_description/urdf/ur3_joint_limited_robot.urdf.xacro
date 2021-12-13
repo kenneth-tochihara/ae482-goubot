@@ -7,10 +7,13 @@
   <!-- common stuff -->
   <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
 
-  <!-- ur3 -->
+  <!-- ur3 macros -->
   <xacro:include filename="$(find ur_description)/urdf/ur3.urdf.xacro" />
 
-  <!-- arm -->
+  <!-- cart macros-->
+  <xacro:include filename="$(find ur_description)/urdf/myrobot.xacro" />
+
+  <!-- ur3 -->
   <xacro:ur3_robot prefix="" joint_limited="true"
     shoulder_pan_lower_limit="${-pi}" shoulder_pan_upper_limit="${pi}"
     shoulder_lift_lower_limit="${-pi}" shoulder_lift_upper_limit="${pi}"
@@ -20,13 +23,13 @@
     wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}"
     transmission_hw_interface="$(arg transmission_hw_interface)"
   />
+  <!-- cart -->
+  <xacro:cart_robot/>
 
-  <link name="world" />
-
-  <joint name="world_joint" type="fixed">
-    <parent link="world" />
+  <joint name="ur3_cart_joint" type="fixed">
+    <parent link="chassis" />
     <child link = "base_link" />
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0" />
   </joint>
 
 </robot>

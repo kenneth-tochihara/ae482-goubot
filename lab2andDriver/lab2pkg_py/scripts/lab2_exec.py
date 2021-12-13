@@ -264,9 +264,6 @@ def move_cart(pub_cmd, loop_rate, dest_twist):
             at_goal = 1
             rospy.loginfo("Goal is reached!")
 
-        print(driver_msg)
-        print(cart_twist)
-        print()
         loop_rate.sleep()
 
         if(spin_count >  SPIN_RATE*5):
@@ -437,10 +434,11 @@ def main():
     #     loop_count = loop_count - 1
     
     # # TESTING CART MOVEMENT
-    # dest_twist = Twist()
-    # dest_twist.linear.x = 0.5
-    # time.sleep(2)
-    # move_cart(pub_twist, loop_rate, dest_twist)
+    dest_twist = Twist()
+    dest_twist.linear.x = 0.5
+    time.sleep(2)
+    move_cart(pub_twist, loop_rate, dest_twist)
+    print("yay")
     
     # #  TESTING BLOCK MOVEMENT
     # time.sleep(2)

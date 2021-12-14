@@ -439,8 +439,6 @@ class ImageConverter:
         # do coordinate transformation in the blob_search() function, namely, from
         # the image frame to the global world frame.
 
-        xw_yw_G = blob_search(cv_image, "green")
-        xw_yw_B = blob_search(cv_image, "lblue")
         xw_yw_W = blob_search(cv_image, "white")
         # blob_search(cv_image, "orange")
 

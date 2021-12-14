@@ -161,7 +161,6 @@ def lab_invk(xWgrip, yWgrip, zWgrip, T_w_ur3, yaw_WgripDegree):
 	#Step 1
 	pWgrip = np.array([xWgrip, yWgrip, zWgrip, 1])
 	p0grip = np.matmul(T_w_ur3, np.vstack(pWgrip))
-	print(p0grip)
  	
 	#Step 2
 	pCen = np.array([0.0,0.0,0.0])
@@ -197,3 +196,22 @@ def lab_invk(xWgrip, yWgrip, zWgrip, T_w_ur3, yaw_WgripDegree):
 
 	# invoke forward kinematics
 	return lab_fk(theta1, theta2, theta3, theta4, theta5, theta6)
+
+"""
+Function that generates a random block spawn location
+"""
+def block_spawn_location():
+    
+	# define spawn range
+    x_width_outer = 1.25; x_width_inner = 0.3
+    y_width_outer = 1.75; y_width_inner = 0.3
+    
+    # generate random values for calculation
+    n_valx = np.random.rand(); n_valy = np.random.rand(); 
+    n_signx = np.random.rand(); n_signy = np.random.rand(); 
+    
+    # generate random coordinates
+    x = ((x_width_outer - x_width_inner)* n_valx + x_width_inner)*((n_signx - 0.5)/abs(n_signx - 0.5))
+    y = ((y_width_outer - y_width_inner)* n_valy + y_width_inner)*((n_signy - 0.5)/abs(n_signy - 0.5))
+    
+    return (x, y)

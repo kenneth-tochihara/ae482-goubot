@@ -11,8 +11,8 @@ from math import atan2
 # beta = 754.12171154586292
 # tx = -0.052737794912171128
 # ty = -0.34366522285472678
-theta = 0.0
-beta = 342.5
+theta = 0.
+beta = 170.
 tx = 0.0
 ty = 0.0
 
@@ -24,10 +24,16 @@ ty_list = []
 
 # Function that converts image coord to world coord
 # Note: input x corresponds to columns in the image, input y is rows in the image
-def IMG2W(x,y):
-    xw = (x - 320)/beta
-    yw = (y - 240)/beta
-    return (yw,xw)
+def IMG2W(row,col):
+    R = np.array([[np.cos(theta),-np.sin(theta),0],
+                        [np.sin(theta),np.cos(theta),0],
+                        [0,0,1]])
+
+    # convert column pixels into world coordinates
+    colw = (col - 320)/beta; yw = colw
+    roww = (row - 240)/beta; xw = roww
+    pw = np.matmul(R, np.vstack((xw,yw,0))) - np.vstack((tx,ty,0))
+    return (pw[0][0],pw[1][0])
     
 
 def calibration_frame(blob_image_center):
@@ -194,11 +200,12 @@ def blob_search(image_raw, color='orange'):
     xw_yw = []
 
     if(num_blobs == 0):
-        print("No block found!")
+        # print("No block found!")
+        pass
     else:
         # Convert image coordinates to global world coordinate using IM2W() function
         for i in range(num_blobs):
-            xw_yw.append(IMG2W(blob_image_center[i][0], blob_image_center[i][1]))
+            xw_yw.append(IMG2W(blob_image_center[i][1], blob_image_center[i][0]))
 
         # # calibration functions
         # calibration_frame(blob_image_center)

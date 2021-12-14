@@ -15,12 +15,14 @@ import rospkg
 import numpy as np
 import yaml
 import sys
+import tf.transformations
 import time
 from math import pi
 from lab2_header import *
 from lab2_func import *
 from blob_search import *
 from rospy.client import spin
+from gazebo_msgs.srv import DeleteModel, SpawnModel
 # from kinematics import *
 from cv_bridge import CvBridge
 
@@ -30,7 +32,7 @@ go_away = [270*PI/180.0, -90*PI/180.0, 90*PI/180.0, -90*PI/180.0, -90*PI/180.0, 
 # Store world coordinates of green and light blue blocks
 xw_yw_G = []
 xw_yw_B = []
-sw_yw_W = []
+xw_yw_W = []
 
 # goals for the blocks
 goal_B = [[0.20582680585318511, -0.16385970163279578, 0.], 
@@ -264,9 +266,6 @@ def move_cart(pub_cmd, loop_rate, dest_twist):
             at_goal = 1
             rospy.loginfo("Goal is reached!")
 
-        print(driver_msg)
-        print(cart_twist)
-        print()
         loop_rate.sleep()
 
         if(spin_count >  SPIN_RATE*5):
@@ -279,11 +278,48 @@ def move_cart(pub_cmd, loop_rate, dest_twist):
 
     return error
 
-def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
+def move_cart_location(pub_cmd, loop_rate, target_xy, vel):
+    
+    global cart_pose
+    global SPIN_RATE
+
+    # calculate displacement of the xy coordinates
+    displacement_xy = np.array([target_xy[0] - cart_pose.position.x, target_xy[1] - cart_pose.position.y])
+    displacement_xy_uvec = displacement_xy / np.linalg.norm(displacement_xy)
+    
+    # publish desired velocity
+    velocity = displacement_xy_uvec * vel
+    dest_twist = Twist()
+    dest_twist.linear.x = velocity[0]
+    dest_twist.linear.y = velocity[1]
+    move_cart(pub_cmd, loop_rate, dest_twist)
+    
+    # check if cart is at desired location
+    spin_count = 0
+    at_goal = 0
+    while at_goal == 0:
+
+        if( abs(target_xy[0]-cart_pose.position.x) < 0.05 and \
+            abs(target_xy[1]-cart_pose.position.y) < 0.05):
+
+            at_goal = 1
+            rospy.loginfo("Goal is reached!")
+
+        loop_rate.sleep()
+
+        if(spin_count >  SPIN_RATE*5):
+            spin_count = 0
+
+        spin_count = spin_count + 1
+    
+    # set velocity to zero
+    dest_twist = Twist()
+    move_cart(pub_cmd, loop_rate, dest_twist)
+
+def pick_block(pub_cmd, loop_rate, target_xyz_world, vel, accel):
 
     """
-    start_xw_yw_zw: where to pick up a block in global coordinates
-    target_xw_yw_zw: where to place the block in global coordinates
+    target_xyz_world: where to pick the block in world coordinates
 
     hint: you will use lab_invk(), gripper(), move_arm() functions to
     pick and place a block
@@ -295,17 +331,15 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
     ur3_base_transform = ur3_base_T(cart_pose)
 
     # calculate joint angles 
-    Q_start_default = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT + 0.2, ur3_base_transform, 0)
-    Q_start = lab_invk(start_xw_yw_zw[0], start_xw_yw_zw[1], BLOCK_HEIGHT, ur3_base_transform, 0)
-    Q_end_default = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT + 0.2, ur3_base_transform, 0)
-    Q_end = lab_invk(target_xw_yw_zw[0], target_xw_yw_zw[1], BLOCK_HEIGHT, ur3_base_transform, 0)
+    Q_target_default = lab_invk(target_xyz_world[0], target_xyz_world[1], BLOCK_HEIGHT + 0.2, ur3_base_transform, 0)
+    Q_target = lab_invk(target_xyz_world[0], target_xyz_world[1], BLOCK_HEIGHT, ur3_base_transform, 0)
 
     # move arm to start location
-    rospy.loginfo("Start location default")
-    move_arm(pub_cmd, loop_rate, Q_start_default, vel, accel)
+    rospy.loginfo("Target location default")
+    move_arm(pub_cmd, loop_rate, Q_target_default, vel, accel)
     time.sleep(3.0)
-    rospy.loginfo("Start location block")
-    move_arm(pub_cmd, loop_rate, Q_start, vel, accel)
+    rospy.loginfo("Target location location block")
+    move_arm(pub_cmd, loop_rate, Q_target, vel, accel)
     
     # turn on gripper
     rospy.loginfo("Gripper on")
@@ -316,14 +350,42 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
     if digital_in_0 == 0:
         error = 1
         gripper(pub_cmd, loop_rate, suction_off)
-        move_arm(pub_cmd, loop_rate, Q_start_default, vel, accel)
+        move_arm(pub_cmd, loop_rate, Q_target_default, vel, accel)
         rospy.loginfo("GRIPPER AINT GRIPPIN")
         return error
 
     # move arm to end location
-    move_arm(pub_cmd, loop_rate, Q_start_default, vel, accel)
-    move_arm(pub_cmd, loop_rate, Q_end_default, vel, accel)
-    move_arm(pub_cmd, loop_rate, Q_end, vel, accel)
+    move_arm(pub_cmd, loop_rate, Q_target_default, vel, accel)
+    error = 0
+
+    # ========================= Student's code ends here ===========================
+
+    return error
+
+def place_block(pub_cmd, loop_rate, target_xyz_world, vel, accel):
+
+    """
+    target_xyz_world: where to place the block in world coordinates
+
+    hint: you will use lab_invk(), gripper(), move_arm() functions to
+    pick and place a block
+
+    """
+    # ========================= Student's code starts here =========================
+
+    global digital_in_0
+    ur3_base_transform = ur3_base_T(cart_pose)
+
+    # calculate joint angles 
+    Q_target_default = lab_invk(target_xyz_world[0], target_xyz_world[1], BLOCK_HEIGHT + 0.2, ur3_base_transform, 0)
+    Q_target = lab_invk(target_xyz_world[0], target_xyz_world[1], BLOCK_HEIGHT + 0.01, ur3_base_transform, 0)
+
+    # move arm to start location
+    rospy.loginfo("Target location default")
+    move_arm(pub_cmd, loop_rate, Q_target_default, vel, accel)
+    time.sleep(3.0)
+    rospy.loginfo("Target location location block")
+    move_arm(pub_cmd, loop_rate, Q_target, vel, accel)
     
     # turn off gripper
     rospy.loginfo("Gripper off")
@@ -331,7 +393,7 @@ def move_block(pub_cmd, loop_rate, start_xw_yw_zw, target_xw_yw_zw, vel, accel):
     time.sleep(0.5)
 
     # move arm to end location
-    move_arm(pub_cmd, loop_rate, Q_end_default, vel, accel)
+    move_arm(pub_cmd, loop_rate, Q_target_default, vel, accel)
     error = 0
 
     # ========================= Student's code ends here ===========================
@@ -378,7 +440,6 @@ class ImageConverter:
         # the image frame to the global world frame.
 
         xw_yw_W = blob_search(cv_image, "white")
-        print(xw_yw_W)
         # blob_search(cv_image, "orange")
 
 
@@ -387,6 +448,7 @@ def main():
     global home
     global Q
     global SPIN_RATE
+    global xw_yw_W
 
     # Initialize ROS node
     rospy.init_node('lab2node')
@@ -405,50 +467,67 @@ def main():
     
     # Initialize subscribe to ur3/odom
     sub_twist = rospy.Subscriber('cart_controller/odom', Odometry, odom_callback)
-
+    
+    # Initialize spawn service for models
+    rospy.wait_for_service("gazebo/spawn_urdf_model")
+    # rospy.wait_for_service("gazebo/delete_urdf_model")
+    delete_model = rospy.ServiceProxy("gazebo/delete_model", DeleteModel)
+    spawn_model = rospy.ServiceProxy("gazebo/spawn_urdf_model", SpawnModel)
+    
     # Check if ROS is ready for operation
     while(rospy.is_shutdown()):
         print("ROS is shutdown!")
-
     rospy.loginfo("Sending Goals ...")
-
     loop_rate = rospy.Rate(SPIN_RATE)
-
     move_arm(pub_command, loop_rate, go_away, 3.0, 3.0)
-     
-    # # TESTING ARM MOVEMENT
-    # Q11 = [105*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    # Q12 = [120*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    # Q13 = [135*pi/180.0, -64*pi/180.0, 123*pi/180.0, -148*pi/180.0, -90*pi/180.0, 0*pi/180.0]
-    # Q = [Q11, Q12, Q13]
+
+    # Initialize CV interface
+    ic = ImageConverter(SPIN_RATE)  
+
+    # Fetch block URDF file
+    rospack = rospkg.RosPack()
+    urdf_filepath = rospack.get_path('ur_description')
+    block_urdf = open(os.path.join(urdf_filepath, 'urdf', 'block.urdf'), 'r').read()
     
-    # time.sleep(1.0)
-    # move_arm(pub_command, loop_rate, home, 3.0, 3.0)
+    # Spawn block
+    rospy.loginfo("Spawning block...")
+    block_orient = Quaternion(x=0, y=0, z=0, w=1)
+    block_location = block_spawn_location()
+    block_pose = Pose(Point(x=block_location[0], y=block_location[1], z=0.0159), block_orient)
+    spawn_model("block", block_urdf, "", block_pose, "world")
+    time.sleep(5)
+    
+    # Check for interferences in motion path
+    if ((abs(xw_yw_W[0][1]) < 0.3) and (xw_yw_W[0][0] < 0)):
+    
+        # Move around the location of the block but still arrive in offset by 0.5 in the x-direction
+        move_cart_location(pub_twist, loop_rate, [0.0, xw_yw_W[0][1] + 0.8], 0.5)
+        move_cart_location(pub_twist, loop_rate, [xw_yw_W[0][0] - 0.5, xw_yw_W[0][1] + 0.8], 0.5)
+        move_cart_location(pub_twist, loop_rate, [xw_yw_W[0][0] - 0.5, xw_yw_W[0][1]], 0.5)
+    
+    else:
         
-    # loop_count = 3
-    # while(loop_count > 0):
-
-    #     rospy.loginfo("Sending goal ...")
-    #     time.sleep(1.0)
-    #     move_arm(pub_command, loop_rate, Q[3 - loop_count], 3.0, 3.0)
-
-    #     loop_count = loop_count - 1
+        # Move to location of block offset by 0.5 in the x-direction
+        move_cart_location(pub_twist, loop_rate, [xw_yw_W[0][0] - 0.5, 0.0], 0.5)
+        move_cart_location(pub_twist, loop_rate, [xw_yw_W[0][0] - 0.5, xw_yw_W[0][1]], 0.5)
     
-    # # TESTING CART MOVEMENT
-    # dest_twist = Twist()
-    # dest_twist.linear.x = 0.5
-    # time.sleep(2)
-    # move_cart(pub_twist, loop_rate, dest_twist)
+    # Pick up block
+    pick_block(pub_command, loop_rate, xw_yw_W[0], 3.0, 3.0)
+    move_arm(pub_command, loop_rate, go_away, 3.0, 3.0)
     
-    # #  TESTING BLOCK MOVEMENT
-    # time.sleep(2)
-    # move_block(pub_command, loop_rate, [0.4, 0.0], [0.5, 0.0], 3.0, 3.0)
-
-    # # TESTING BLOCK MOVEMENT WITH COMPUTER VISION
-    # time.sleep(2)
-    # ic = ImageConverter(SPIN_RATE)
-    # move_block(pub_command, loop_rate, [xw_yw_W[0][1], xw_yw_W[0][0]], xw_yw_W[0], 3.0, 3.0)
-
+    # Move back to origin
+    move_cart_location(pub_twist, loop_rate, [0.0, 0.0], 1.0)
+    
+    # Place block back in front
+    place_block(pub_command, loop_rate, [0.5, 0.0], 3.0, 3.0)
+    move_arm(pub_command, loop_rate, go_away, 3.0, 3.0)
+    
+    # restart the program
+    time.sleep(3)
+    delete_model("block")
+    time.sleep(1)
+    
+    return
 
 
 if __name__ == '__main__':

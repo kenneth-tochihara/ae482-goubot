@@ -13,7 +13,7 @@
       <pose>0 0 0.075 0 0 0</pose>
 
       <inertial>
-        <mass value="20.0"/>
+        <mass value="150.0"/>
         <origin xyz="0.0 0 0.075" rpy=" 0 0 0"/>
         <inertia
             ixx="0.5" ixy="0" ixz="0"
@@ -24,14 +24,14 @@
 
       <collision name='collision'>
         <geometry>
-          <box size=".4 .2 .15"/>
+          <box size=".4 .4 .15"/>
         </geometry>
       </collision>
 
       <visual name='chassis_visual'>
         <origin xyz="0 0 0" rpy=" 0 0 0"/>
         <geometry>
-          <box size=".4 .2 .15"/>
+          <box size=".4 .4 .15"/>
         </geometry>
       </visual>
     </link>

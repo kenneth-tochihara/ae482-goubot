@@ -25,17 +25,11 @@
 
   <!-- start this controller -->
   <rosparam file="$(find ur_gazebo)/controller/arm_controller_ur3.yaml" command="load"/>
-  <!-- <rosparam file="$(find ur_gazebo)/controller/cart_controller.yaml" command="load"/> -->
-
   <node name="arm_controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn arm_controller" respawn="false" output="screen"/>
-  <!-- <node name="cart_control_controller_spawner" pkg="controller_manager" type="controller_manager" respawn="false" output="screen" args="spawn cart_controller"/> -->
   <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false" output="screen" args="load joint_group_position_controller" />
 
   <!-- load other controllers -->
-
-  <node name="spawn_block" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/block.urdf -urdf -model block -x 0.4 -y 0.0 -z 0.0159" />
-
-  <node name="spawn_camera" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/camera.urdf -urdf -model camera -x 0.29 -y 0.105 -z 2.0" />
+  <node name="spawn_camera" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur_description)/urdf/camera.urdf -urdf -model camera -x 0.0 -y 0.0 -z 4.0" />
 
 	<node name="ur3_gazebo_driver_1" pkg="ur3_driver" type="ur3_gazebo_driver.py" output="screen"></node>
 

@@ -212,6 +212,6 @@ def block_spawn_location():
     
     # generate random coordinates
     x = ((x_width_outer - x_width_inner)* n_valx + x_width_inner)*((n_signx - 0.5)/abs(n_signx - 0.5))
-    y = ((y_width_outer - y_width_inner)* n_valy + y_width_inner)*((n_signy - 0.5)/abs(n_signy - 0.5))
+    y = (y_width_outer * n_valy)*((n_signy - 0.5)/abs(n_signy - 0.5))
     
     return (x, y)

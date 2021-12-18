@@ -493,9 +493,13 @@ def main():
     rospy.loginfo("Spawning block...")
     block_orient = Quaternion(x=0, y=0, z=0, w=1)
     block_location = block_spawn_location()
-    block_pose = Pose(Point(x=block_location[0], y=block_location[1], z=0.0159), block_orient)
+    # block_pose = Pose(Point(x=block_location[0], y=block_location[1], z=0.0159), block_orient)
+    block_pose = Pose(Point(x=-1.0, y=-0.8, z=0.0159), block_orient)
+    
     spawn_model("block", block_urdf, "", block_pose, "world")
     time.sleep(5)
+    
+    print("BLOCK XY: ", xw_yw_W[0])
     
     # Check for interferences in motion path
     if ((abs(xw_yw_W[0][1]) < 0.3) and (xw_yw_W[0][0] < 0)):
@@ -522,11 +526,7 @@ def main():
     place_block(pub_command, loop_rate, [0.5, 0.0], 3.0, 3.0)
     move_arm(pub_command, loop_rate, go_away, 3.0, 3.0)
     
-    # restart the program
-    time.sleep(3)
-    delete_model("block")
-    time.sleep(1)
-    
+    print("CART DXDY: ", current_odom.pose.pose)
     return
 
 

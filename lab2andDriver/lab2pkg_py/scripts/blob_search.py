@@ -123,7 +123,7 @@ def blob_search(image_raw, color='orange'):
     params.filterByArea = True
 
     # block
-    params.minArea = 55
+    params.minArea = 10
     params.maxArea = 150
 
     # params.minArea = 625 - 150
